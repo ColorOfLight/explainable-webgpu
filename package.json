@@ -29,6 +29,7 @@
     "@docusaurus/module-type-aliases": "3.3.2",
     "@docusaurus/tsconfig": "3.3.2",
     "@docusaurus/types": "3.3.2",
+    "@webgpu/types": "^0.1.40",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "raw-loader": "^4.0.2",
