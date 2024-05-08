@@ -102,7 +102,9 @@ export class WebGPURenderer {
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
     pass.setVertexBuffer(0, vertexBuffer);
-    pass.draw(firstMesh.geometry.vertexes.length / 3);
+    pass.draw(
+      firstMesh.geometry.vertexes.length / firstMesh.geometry.vertexSize
+    );
     pass.end();
 
     const commandBuffer = encoder.finish();
