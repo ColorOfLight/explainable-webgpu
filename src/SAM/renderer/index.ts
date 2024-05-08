@@ -110,4 +110,27 @@ export class WebGPURenderer {
     const commandBuffer = encoder.finish();
     this.device.queue.submit([commandBuffer]);
   }
+
+  generateResizeObserver(callback: () => void): ResizeObserver {
+    return new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (!(entry.target instanceof HTMLCanvasElement)) {
+          throw new Error("ResizeObserver target must be a canvas element.");
+        }
+
+        const canvas = entry.target as HTMLCanvasElement;
+        const width = entry.contentBoxSize[0].inlineSize;
+        const height = entry.contentBoxSize[0].blockSize;
+        canvas.width = Math.max(
+          1,
+          Math.min(width, this.device.limits.maxTextureDimension2D)
+        );
+        canvas.height = Math.max(
+          1,
+          Math.min(height, this.device.limits.maxTextureDimension2D)
+        );
+        callback();
+      }
+    });
+  }
 }
