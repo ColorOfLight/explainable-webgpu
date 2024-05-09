@@ -1,4 +1,8 @@
+struct FragmentInput {
+  @location(1) color: vec4f,
+};
+
 @fragment
-fn fragmentMain() -> @location(0) vec4f {
-  return vec4f(1, 0, 0, 1);
+fn fragmentMain(input: FragmentInput) -> @location(0) vec4f {
+  return input.color;
 }

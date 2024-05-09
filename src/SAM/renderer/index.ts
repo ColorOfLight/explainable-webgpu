@@ -63,6 +63,8 @@ export class WebGPURenderer {
     }
 
     const firstMesh = scene.meshes[0];
+    const modelTransformData = firstMesh.modelTransformMatrix.renderingData;
+    const vertexData = firstMesh.geometry.vertexBufferData;
 
     const vertexModule = this.device.createShaderModule(
       firstMesh.material.vertexDescriptor
@@ -73,25 +75,135 @@ export class WebGPURenderer {
 
     const vertexBuffer = this.device.createBuffer({
       label: "Vertex Buffer",
-      size: firstMesh.geometry.vertexes.byteLength,
+      size: vertexData.byteLength,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
-    this.device.queue.writeBuffer(vertexBuffer, 0, firstMesh.geometry.vertexes);
+    this.device.queue.writeBuffer(vertexBuffer, 0, vertexData);
+
+    const modelTransformBuffer = this.device.createBuffer({
+      label: "Model Transform Buffer",
+      size: modelTransformData.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(modelTransformBuffer, 0, modelTransformData);
+
+    // const viewTransformBuffer = this.device.createBuffer({
+    //   label: "View Transform Buffer",
+    //   size: camera.viewTransformMatrix.data.byteLength,
+    //   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    // });
+    // this.device.queue.writeBuffer(
+    //   viewTransformBuffer,
+    //   0,
+    //   camera.viewTransformMatrix.data
+    // );
+    // console.log(camera.viewTransformMatrix.data);
+
+    // const projTransformBuffer = this.device.createBuffer({
+    //   label: "Projection Transform Buffer",
+    //   size: camera.projTransformMatrix.data.byteLength,
+    //   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    // });
+    // this.device.queue.writeBuffer(
+    //   projTransformBuffer,
+    //   0,
+    //   camera.projTransformMatrix.data
+    // );
 
     const vertexBufferLayout: GPUVertexBufferLayout = {
-      arrayStride: 12,
+      arrayStride: 4 * (3 + 4),
       attributes: [
         {
+          // Position
           format: "float32x3" as const,
           offset: 0,
           shaderLocation: 0,
         },
+        {
+          // Color
+          format: "float32x4" as const,
+          offset: 4 * 3,
+          shaderLocation: 1,
+        },
       ],
     };
 
+    const modelBindGroupLayout: GPUBindGroupLayout =
+      this.device.createBindGroupLayout({
+        label: "Model Bind Group Layout",
+        entries: [
+          {
+            // Model Transformation Matrix
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
+        ],
+      });
+
+    // const cameraBindGroupLayout: GPUBindGroupLayout =
+    //   this.device.createBindGroupLayout({
+    //     label: "Camera Bind Group Layout",
+    //     entries: [
+    //       {
+    //         // View Transformation Matrix
+    //         binding: 0,
+    //         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+    //         buffer: {
+    //           type: "uniform" as const,
+    //         },
+    //       },
+    //       {
+    //         // Projection Transformation Matrix
+    //         binding: 1,
+    //         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+    //         buffer: {
+    //           type: "uniform" as const,
+    //         },
+    //       },
+    //     ],
+    //   });
+
+    // const cameraBindGroup = this.device.createBindGroup({
+    //   layout: cameraBindGroupLayout,
+    //   entries: [
+    //     {
+    //       binding: 0,
+    //       resource: {
+    //         buffer: viewTransformBuffer,
+    //       },
+    //     },
+    //     {
+    //       binding: 1,
+    //       resource: {
+    //         buffer: projTransformBuffer,
+    //       },
+    //     },
+    //   ],
+    // });
+
+    const modelBindGroup = this.device.createBindGroup({
+      layout: modelBindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: {
+            buffer: modelTransformBuffer,
+          },
+        },
+      ],
+    });
+
+    const pipelineLayout = this.device.createPipelineLayout({
+      label: "Render Layout",
+      bindGroupLayouts: [modelBindGroupLayout],
+    });
+
     const pipeline = this.device.createRenderPipeline({
       label: "Renderer Pipeline",
-      layout: "auto",
+      layout: pipelineLayout,
       vertex: {
         module: vertexModule,
         buffers: [vertexBufferLayout],
@@ -118,13 +230,14 @@ export class WebGPURenderer {
       .getCurrentTexture()
       .createView();
 
-    const encoder = this.device.createCommandEncoder({ label: "draw-encoder" });
+    const encoder = this.device.createCommandEncoder({
+      label: "draw-encoder",
+    });
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
+    pass.setBindGroup(0, modelBindGroup);
     pass.setVertexBuffer(0, vertexBuffer);
-    pass.draw(
-      firstMesh.geometry.vertexes.length / firstMesh.geometry.vertexSize
-    );
+    pass.draw(firstMesh.geometry.vertexes.length);
     pass.end();
 
     const commandBuffer = encoder.finish();
