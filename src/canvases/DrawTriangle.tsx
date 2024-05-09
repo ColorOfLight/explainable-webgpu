@@ -12,9 +12,12 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const mesh = new SAM.Mesh(geometry, material);
 
+  const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
+  camera.position = new SAM.Vector3([0, 0, 1]);
+
   scene.add(mesh);
 
-  renderer.render(scene);
+  renderer.render(scene, camera);
 };
 
 const DrawTriangleCanvas = () => {

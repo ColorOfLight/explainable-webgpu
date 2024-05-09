@@ -7,7 +7,7 @@ export class Camera {
 
   constructor(position?: Vector3, target?: Vector3) {
     this.target = target ?? new Vector3([0, 0, 0]);
-    this.position = position ?? new Vector3([0, 0, -1]);
+    this.position = position ?? new Vector3([0, 0, 1]);
   }
 
   get viewTransformMatrix(): Matrix4 {
@@ -48,42 +48,12 @@ export class OrthographicCamera extends Camera {
   }
 
   get projTransformMatrix(): Matrix4 {
-    // const projTransformMatrix = new Matrix4([
-    //   2 / (this.right - this.left),
-    //   0,
-    //   0,
-    //   -(this.right + this.left) / (this.right - this.left),
-    //   0,
-    //   2 / (this.top - this.bottom),
-    //   0,
-    //   -(this.top + this.bottom) / (this.top - this.bottom),
-    //   0,
-    //   0,
-    //   -2 / (this.far - this.near),
-    //   -(this.far + this.near) / (this.far - this.near),
-    //   0,
-    //   0,
-    //   0,
-    //   1,
-    // ]);
-
+    // prettier-ignore
     const projTransformMatrix = new Matrix4([
-      2 / (this.right - this.left),
-      0,
-      0,
-      0,
-      0,
-      2 / (this.top - this.bottom),
-      0,
-      0,
-      0,
-      0,
-      1 / (this.near - this.far),
-      0,
-      (this.right + this.left) / (this.left - this.right),
-      (this.top + this.bottom) / (this.bottom - this.top),
-      this.near / (this.near - this.far),
-      1,
+      2 / (this.right - this.left), 0, 0, (this.right + this.left) / (this.left - this.right),
+      0, 2 / (this.top - this.bottom), 0, (this.top + this.bottom) / (this.bottom - this.top),
+      0, 0, 1 / (this.near - this.far),  this.near / (this.near - this.far),
+      0, 0, 0, 1,
     ]);
 
     return projTransformMatrix;
@@ -106,54 +76,33 @@ export class PerspectiveCamera extends Camera {
   }
 
   get projTransformMatrix(): Matrix4 {
-    const focalLength = 1 / Math.tan(this.fov / 2);
+    const f = 1.0 / Math.tan(this.fov / 2);
+    const nf = 1 / (this.near - this.far);
 
+    // prettier-ignore
     const projTransformMatrix = new Matrix4([
-      this.aspect * focalLength,
-      0,
-      0,
-      0,
-      0,
-      focalLength,
-      0,
-      0,
-      0,
-      0,
-      (this.far + this.near) / (this.far - this.near),
-      (this.far * this.near) / (this.near - this.far),
-      0,
-      0,
-      1,
-      0,
+        f / this.aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, this.far * nf, (this.far * this.near) * nf,
+        0, 0, -1, 0,
     ]);
 
     return projTransformMatrix;
   }
 }
 
-function computeViewTransformMatrix(position: Vector3, target: Vector3) {
-  const eyeFromTarget = position.sub(target);
+function computeViewTransformMatrix(eye: Vector3, target: Vector3) {
+  const eyeFromTarget = eye.sub(target);
 
   const zAxis = eyeFromTarget.normalize();
   const xAxis = new Vector3([0, 1, 0]).cross(zAxis).normalize();
   const yAxis = zAxis.cross(xAxis);
 
+  // prettier-ignore
   return new Matrix4([
-    xAxis.x,
-    yAxis.x,
-    zAxis.x,
-    -eyeFromTarget.x,
-    xAxis.y,
-    yAxis.y,
-    zAxis.y,
-    -eyeFromTarget.y,
-    xAxis.z,
-    yAxis.z,
-    zAxis.z,
-    -eyeFromTarget.z,
-    0,
-    0,
-    0,
-    1,
+    xAxis.x, yAxis.x, zAxis.x, -xAxis.dot(eye),
+    xAxis.y, yAxis.y, zAxis.y, -yAxis.dot(eye),
+    xAxis.z, yAxis.z, zAxis.z, -zAxis.dot(eye),
+    0, 0, 0, 1,
   ]);
 }
