@@ -1,7 +1,8 @@
 import { Scene } from "../scene";
+import { Camera } from "../camera";
 
 export class WebGPURenderer {
-  mode: "not-initialized" | "ready";
+  status: "not-initialized" | "ready" | "device-destroyed" | "device-lost";
   canvas: HTMLCanvasElement;
   adapter: GPUAdapter;
   device: GPUDevice;
@@ -13,13 +14,13 @@ export class WebGPURenderer {
       throw new Error("WebGPU not supported on this browser.");
     }
 
-    this.mode = "not-initialized";
+    this.status = "not-initialized";
     this.canvas = canvas;
   }
 
   async init() {
-    if (this.mode !== "not-initialized") {
-      throw new Error("WebGPURenderer is already initialized!");
+    if (this.status === "ready") {
+      throw new Error("Renderer already initialized.");
     }
 
     this.adapter = await navigator.gpu.requestAdapter();
@@ -39,9 +40,28 @@ export class WebGPURenderer {
       device: this.device,
       format: this.canvasFormat,
     });
+
+    this.device.lost.then((info) => {
+      console.error(`WebGPU device was lost: ${info.message}`);
+
+      if (info.reason !== "destroyed") {
+        this.status = "device-lost";
+        this.init();
+      } else {
+        this.status = "device-destroyed";
+      }
+    });
+
+    this.status = "ready";
   }
 
-  render(scene: Scene) {
+  render(scene: Scene, camera?: Camera) {
+    if (this.status !== "ready") {
+      throw new Error(
+        `Renderer is not ready for rendering. Current status is: ${this.status}`
+      );
+    }
+
     const firstMesh = scene.meshes[0];
 
     const vertexModule = this.device.createShaderModule(
