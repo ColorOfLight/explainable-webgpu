@@ -7,11 +7,20 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const scene = new SAM.Scene();
 
-  // const geometry = new SAM.CubeGeometry(0.5, 0.5, 0.5);
-  const geometry = new SAM.SimpleTriangleGeometry(0.5);
+  const geometry = new SAM.CubeGeometry(0.5, 0.5, 0.5, {
+    colors: {
+      front: new SAM.Color([0.5, 0.5, 0, 1]),
+      back: new SAM.Color([0.5, 0, 0.5, 1]),
+      top: new SAM.Color([0, 0.5, 0.5, 1]),
+      bottom: new SAM.Color([0.5, 0, 0, 1]),
+      left: new SAM.Color([0, 0.5, 0, 1]),
+      right: new SAM.Color([0, 0, 0.5, 1]),
+    },
+  });
   const material = new SAM.BasicMaterial([1, 0, 0, 0]);
 
   const mesh = new SAM.Mesh(geometry, material);
+  mesh.rotation = new SAM.Vector3([0, Math.PI / 2, 0]);
 
   scene.add(mesh);
 

@@ -1,11 +1,12 @@
+import * as SAM from "@site/src/SAM";
+
 export interface Vertex {
   position: [number, number, number]; // xyz
-  color?: [number, number, number, number]; // rgba
+  color?: SAM.Color;
 }
 
 export class Geometry {
   vertexes: Vertex[];
-  vertexCount: number;
 
   constructor() {}
 
@@ -18,9 +19,9 @@ export class Geometry {
       data[i * vertexByteSize] = vertex.position[0];
       data[i * vertexByteSize + 1] = vertex.position[1];
       data[i * vertexByteSize + 2] = vertex.position[2];
-      data[i * vertexByteSize + 3] = vertex.color ? vertex.color[0] : 1;
-      data[i * vertexByteSize + 4] = vertex.color ? vertex.color[1] : 1;
-      data[i * vertexByteSize + 5] = vertex.color ? vertex.color[2] : 1;
+      data[i * vertexByteSize + 3] = vertex.color ? vertex.color.data[0] : 1;
+      data[i * vertexByteSize + 4] = vertex.color ? vertex.color.data[1] : 1;
+      data[i * vertexByteSize + 5] = vertex.color ? vertex.color.data[2] : 1;
     }
 
     return data;
@@ -32,163 +33,107 @@ export class SimpleTriangleGeometry extends Geometry {
     super();
 
     this.vertexes = [
-      { position: [size, size, 0], color: [1, 0, 0, 1] },
-      { position: [-size, -size, 0], color: [0, 1, 0, 1] },
-      { position: [size, -size, 0], color: [0, 0, 1, 1] },
+      { position: [size, size, 0], color: new SAM.Color([1, 0, 0, 1]) },
+      { position: [-size, -size, 0], color: new SAM.Color([0, 1, 0, 1]) },
+      { position: [size, -size, 0], color: new SAM.Color([0, 0, 1, 1]) },
     ];
   }
 }
 
-/*
+export interface CubeGeometryOptions {
+  colors?: {
+    front: SAM.Color;
+    back: SAM.Color;
+    top: SAM.Color;
+    bottom: SAM.Color;
+    left: SAM.Color;
+    right: SAM.Color;
+  };
+}
+
 export class CubeGeometry extends Geometry {
-  constructor(width: number, height: number, depth: number) {
+  constructor(
+    width: number,
+    height: number,
+    depth: number,
+    options?: CubeGeometryOptions
+  ) {
+    super();
+
     const x = width / 2;
     const y = height / 2;
     const z = depth / 2;
 
-    const frontSide = [
-      -x,
-      -y,
-      z,
-      -x,
-      y,
-      z,
-      x,
-      -y,
-      z,
-      //
-      x,
-      y,
-      z,
-      -x,
-      y,
-      z,
-      x,
-      -y,
-      z,
+    const defaultColor = new SAM.Color([1, 1, 1, 1]);
+
+    const frontColor = options?.colors?.front || defaultColor;
+    const backColor = options?.colors?.back || defaultColor;
+    const topColor = options?.colors?.top || defaultColor;
+    const bottomColor = options?.colors?.bottom || defaultColor;
+    const leftColor = options?.colors?.left || defaultColor;
+    const rightColor = options?.colors?.right || defaultColor;
+
+    const frontVertexes: Vertex[] = [
+      { position: [-x, -y, z], color: frontColor },
+      { position: [x, -y, z], color: frontColor },
+      { position: [-x, y, z], color: frontColor },
+      { position: [x, y, z], color: frontColor },
+      { position: [-x, y, z], color: frontColor },
+      { position: [x, -y, z], color: frontColor },
     ];
 
-    const backSide = [
-      -x,
-      -y,
-      -z,
-      x,
-      -y,
-      -z,
-      -x,
-      y,
-      -z,
-      //
-      x,
-      -y,
-      -z,
-      x,
-      y,
-      -z,
-      -x,
-      y,
-      -z,
+    const backVertexes: Vertex[] = [
+      { position: [-x, -y, -z], color: backColor },
+      { position: [-x, y, -z], color: backColor },
+      { position: [x, -y, -z], color: backColor },
+      { position: [x, y, -z], color: backColor },
+      { position: [x, -y, -z], color: backColor },
+      { position: [-x, y, -z], color: backColor },
     ];
 
-    const topSide = [
-      -x,
-      y,
-      z,
-      -x,
-      y,
-      -z,
-      x,
-      y,
-      z,
-      //
-      x,
-      y,
-      -z,
-      x,
-      y,
-      z,
-      -x,
-      y,
-      -z,
+    const topVertexes: Vertex[] = [
+      { position: [-x, y, -z], color: topColor },
+      { position: [-x, y, z], color: topColor },
+      { position: [x, y, -z], color: topColor },
+      { position: [x, y, z], color: topColor },
+      { position: [x, y, -z], color: topColor },
+      { position: [-x, y, z], color: topColor },
     ];
 
-    const bottomSide = [
-      -x,
-      -y,
-      z,
-      -x,
-      -y,
-      -z,
-      x,
-      -y,
-      z,
-      //
-      x,
-      -y,
-      -z,
-      x,
-      -y,
-      z,
-      -x,
-      -y,
-      -z,
+    const bottomVertexes: Vertex[] = [
+      { position: [-x, -y, -z], color: bottomColor },
+      { position: [x, -y, -z], color: bottomColor },
+      { position: [-x, -y, z], color: bottomColor },
+      { position: [x, -y, z], color: bottomColor },
+      { position: [-x, -y, z], color: bottomColor },
+      { position: [x, -y, -z], color: bottomColor },
     ];
 
-    const leftSide = [
-      -x,
-      -y,
-      z,
-      -x,
-      -y,
-      -z,
-      -x,
-      y,
-      z,
-      //
-      -x,
-      y,
-      -z,
-      -x,
-      y,
-      z,
-      -x,
-      -y,
-      -z,
+    const leftVertexes: Vertex[] = [
+      { position: [-x, -y, -z], color: leftColor },
+      { position: [-x, -y, z], color: leftColor },
+      { position: [-x, y, -z], color: leftColor },
+      { position: [-x, y, z], color: leftColor },
+      { position: [-x, y, -z], color: leftColor },
+      { position: [-x, -y, z], color: leftColor },
     ];
 
-    const rightSide = [
-      x,
-      -y,
-      z,
-      x,
-      -y,
-      -z,
-      x,
-      y,
-      z,
-      //
-      x,
-      y,
-      -z,
-      x,
-      y,
-      z,
-      x,
-      -y,
-      -z,
+    const rightVertexes: Vertex[] = [
+      { position: [x, -y, -z], color: rightColor },
+      { position: [x, y, -z], color: rightColor },
+      { position: [x, -y, z], color: rightColor },
+      { position: [x, y, z], color: rightColor },
+      { position: [x, -y, z], color: rightColor },
+      { position: [x, y, -z], color: rightColor },
     ];
 
-    const vertexes = new Float32Array([
-      ...frontSide,
-      ...backSide,
-      ...topSide,
-      ...bottomSide,
-      ...leftSide,
-      ...rightSide,
-    ]);
-
-    super(vertexes);
+    this.vertexes = [
+      ...frontVertexes,
+      ...backVertexes,
+      ...topVertexes,
+      ...bottomVertexes,
+      ...leftVertexes,
+      ...rightVertexes,
+    ];
   }
-  
 }
-*/

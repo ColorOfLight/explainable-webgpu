@@ -1,7 +1,7 @@
 export class Color {
-  data: Uint8Array;
+  data: Float32Array;
 
   constructor([r, g, b, a]: [number, number, number, number]) {
-    this.data = new Uint8Array([r, g, b, a]);
+    this.data = new Float32Array([r, g, b, a]);
   }
 }
