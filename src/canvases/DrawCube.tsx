@@ -20,7 +20,8 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const material = new SAM.BasicMaterial(new SAM.Color([1, 0, 0, 0]));
 
   const mesh = new SAM.Mesh(geometry, material);
-  mesh.rotation = new SAM.Vector3([Math.PI / 4, Math.PI / 4, 0]);
+  mesh.setRotateX(Math.PI / 4);
+  mesh.setRotateY(Math.PI / 4);
 
   scene.add(mesh);
 

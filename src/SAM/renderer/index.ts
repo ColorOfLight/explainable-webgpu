@@ -62,9 +62,7 @@ export class WebGPURenderer {
     }
 
     const firstMesh = scene.meshes[0];
-    const modelTransformData = firstMesh
-      .getModelTransformMatrix()
-      .getRenderingData();
+    const modelTransformData = firstMesh.transformMatrix.getRenderingData();
     const vertexData = firstMesh.geometry.getVertexBufferData();
     const projTransformData = camera
       .getProjTransformMatrix()
