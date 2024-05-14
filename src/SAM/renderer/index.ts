@@ -267,7 +267,7 @@ export class WebGPURenderer {
     this.device.queue.submit([commandBuffer]);
   }
 
-  generateResizeObserver(callback: () => void): ResizeObserver {
+  generateResizeObserver(callback?: () => void): ResizeObserver {
     return new ResizeObserver((entries) => {
       for (const entry of entries) {
         if (!(entry.target instanceof HTMLCanvasElement)) {
@@ -285,7 +285,7 @@ export class WebGPURenderer {
           1,
           Math.min(height, this.device.limits.maxTextureDimension2D)
         );
-        callback();
+        callback?.();
       }
     });
   }

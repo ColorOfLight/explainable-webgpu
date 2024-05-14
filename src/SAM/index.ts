@@ -7,3 +7,4 @@ export * from "./camera";
 export * from "./vector";
 export * from "./matrix";
 export * from "./color";
+export * from "./utils";
