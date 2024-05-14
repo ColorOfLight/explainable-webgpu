@@ -4,20 +4,24 @@ export class OrbitalControl {
   targetElement: HTMLCanvasElement;
   camera: SAM.Camera;
   isDragging: boolean;
+  isRightDragging: boolean;
   prevX: number | undefined;
   prevY: number | undefined;
   listeners: EventListener[];
   rotationSpeed: number;
   translationSpeed: number;
+  zoomingSpeed: number;
 
   constructor(targetElement: HTMLCanvasElement) {
     this.targetElement = targetElement;
     this.isDragging = false;
+    this.isRightDragging = false;
     this.prevX = undefined;
     this.prevY = undefined;
     this.listeners = [];
     this.rotationSpeed = 0.01;
-    this.translationSpeed = 0.005;
+    this.translationSpeed = 0.0001;
+    this.zoomingSpeed = 0.005;
   }
 
   attachTo(camera: SAM.Camera): void {
@@ -30,23 +34,31 @@ export class OrbitalControl {
       event.preventDefault();
     });
 
-    this.targetElement.addEventListener("mouseup", () => {
+    this.targetElement.addEventListener("contextmenu", (event) => {
+      this.isRightDragging = true;
+
+      event.preventDefault();
+    });
+
+    this.targetElement.addEventListener("mouseup", (event: MouseEvent) => {
       this.isDragging = false;
+      this.isRightDragging = false;
       this.prevX = undefined;
       this.prevY = undefined;
 
       event.preventDefault();
     });
 
-    this.targetElement.addEventListener("mouseout", () => {
+    this.targetElement.addEventListener("mouseout", (event: MouseEvent) => {
       this.isDragging = false;
+      this.isRightDragging = false;
       this.prevX = undefined;
       this.prevY = undefined;
 
       event.preventDefault();
     });
 
-    this.targetElement.addEventListener("mousemove", (event) => {
+    this.targetElement.addEventListener("mousemove", (event: MouseEvent) => {
       if (this.isDragging) {
         if (this.prevX === undefined) {
           throw new Error("prevX is undefined");
@@ -59,34 +71,45 @@ export class OrbitalControl {
         const deltaX = event.clientX - this.prevX;
         const deltaY = event.clientY - this.prevY;
 
-        this.rotateCamera(deltaX, deltaY);
+        if (this.isRightDragging) {
+          const cameraFromTarget = this.camera.eye.sub(this.camera.target);
+          const up = this.camera.up.normalize();
+          const right = cameraFromTarget.cross(up).normalize();
+          const projMatrix = this.camera.getViewTransformMatrix();
+          const translation = up
+            .multiplyScalar(deltaY * this.translationSpeed)
+            .add(right.multiplyScalar(deltaX * this.translationSpeed));
 
-        this.prevX = event.clientX;
-        this.prevY = event.clientY;
+          this.camera.eye = this.camera.eye.add(translation);
+          this.camera.target = projMatrix.productVector3(
+            this.camera.target.add(translation)
+          );
+        } else {
+          this.rotateCamera(deltaX, deltaY);
+
+          this.prevX = event.clientX;
+          this.prevY = event.clientY;
+        }
       }
 
       event.preventDefault();
     });
 
-    this.targetElement.addEventListener("wheel", (event) => {
+    this.targetElement.addEventListener("wheel", (event: WheelEvent) => {
       const deltaY = event.deltaY;
 
       const cameraFromTarget = this.camera.eye.sub(this.camera.target);
       const cameraFromTargetLength = cameraFromTarget.getLength();
 
       if (
-        Math.abs(deltaY * this.translationSpeed) < cameraFromTargetLength ||
+        Math.abs(deltaY * this.zoomingSpeed) < cameraFromTargetLength ||
         deltaY * cameraFromTargetLength < 0
       ) {
         this.camera.eye = this.camera.eye.sub(
-          cameraFromTarget.multiplyScalar(deltaY * this.translationSpeed)
+          cameraFromTarget.multiplyScalar(deltaY * this.zoomingSpeed)
         );
       }
 
-      event.preventDefault();
-    });
-
-    this.targetElement.addEventListener("contextmenu", (event) => {
       event.preventDefault();
     });
   }

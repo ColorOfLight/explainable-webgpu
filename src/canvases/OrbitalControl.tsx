@@ -31,6 +31,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     0.1,
     100
   );
+  // const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
   camera.eye = new SAM.Vector3([0, 0, 1]);
 
   const orbitalControl = new SAM.OrbitalControl(canvas);

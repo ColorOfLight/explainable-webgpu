@@ -230,4 +230,24 @@ export class Matrix4 {
     newMatrix.setRotateZ(angle);
     return newMatrix;
   }
+
+  productVector3(vector: SAM.Vector3): SAM.Vector3 {
+    const x =
+      this.data[0] * vector.getX() +
+      this.data[1] * vector.getY() +
+      this.data[2] * vector.getZ() +
+      this.data[3];
+    const y =
+      this.data[4] * vector.getX() +
+      this.data[5] * vector.getY() +
+      this.data[6] * vector.getZ() +
+      this.data[7];
+    const z =
+      this.data[8] * vector.getX() +
+      this.data[9] * vector.getY() +
+      this.data[10] * vector.getZ() +
+      this.data[11];
+
+    return new SAM.Vector3([x, y, z]);
+  }
 }
