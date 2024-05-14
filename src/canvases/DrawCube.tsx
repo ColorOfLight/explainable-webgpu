@@ -17,21 +17,21 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
       right: new SAM.Color([0, 0, 0.5, 1]),
     },
   });
-  const material = new SAM.BasicMaterial([1, 0, 0, 0]);
+  const material = new SAM.BasicMaterial(new SAM.Color([1, 0, 0, 0]));
 
   const mesh = new SAM.Mesh(geometry, material);
   mesh.rotation = new SAM.Vector3([Math.PI / 4, Math.PI / 4, 0]);
 
   scene.add(mesh);
 
-  // const camera = new SAM.PerspectiveCamera(
-  //   Math.PI / 4,
-  //   canvas.clientWidth / canvas.clientHeight,
-  //   0.1,
-  //   100
-  // );
-  const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
-  camera.position = new SAM.Vector3([0, 0, 1]);
+  const camera = new SAM.PerspectiveCamera(
+    Math.PI / 2,
+    canvas.clientWidth / canvas.clientHeight,
+    0.1,
+    100
+  );
+  // const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
+  camera.eye = new SAM.Vector3([0, 0, 1]);
 
   renderer.render(scene, camera);
 

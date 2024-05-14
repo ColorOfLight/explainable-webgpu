@@ -5,63 +5,123 @@ export class Vector3 {
     this.data = new Float32Array(data);
   }
 
-  add(vec: Vector3) {
-    return new Vector3([this.x + vec.x, this.y + vec.y, this.z + vec.z]);
-  }
-
-  sub(vec: Vector3) {
-    return new Vector3([this.x - vec.x, this.y - vec.y, this.z - vec.z]);
-  }
-
-  multiplyScalar(scalar: number) {
-    return new Vector3([this.x * scalar, this.y * scalar, this.z * scalar]);
-  }
-
-  divideScalar(scalar: number) {
-    return new Vector3([this.x / scalar, this.y / scalar, this.z / scalar]);
-  }
-
-  dot(v: Vector3) {
-    return this.x * v.x + this.y * v.y + this.z * v.z;
-  }
-
-  cross(v: Vector3) {
-    return new Vector3([
-      this.y * v.z - this.z * v.y,
-      this.z * v.x - this.x * v.z,
-      this.x * v.y - this.y * v.x,
-    ]);
-  }
-
-  length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-  }
-
-  normalize() {
-    return this.divideScalar(this.length());
-  }
-
-  get x() {
+  getX(): number {
     return this.data[0];
   }
 
-  get y() {
+  getY(): number {
     return this.data[1];
   }
 
-  get z() {
+  getZ(): number {
     return this.data[2];
   }
 
-  set x(value: number) {
-    this.data[0] = value;
+  setX(x: number): void {
+    this.data[0] = x;
   }
 
-  set y(value: number) {
-    this.data[1] = value;
+  setY(y: number): void {
+    this.data[1] = y;
   }
 
-  set z(value: number) {
-    this.data[2] = value;
+  setZ(z: number): void {
+    this.data[2] = z;
+  }
+
+  setAdd(vector: Vector3): void {
+    this.data[0] += vector.getX();
+    this.data[1] += vector.getY();
+    this.data[2] += vector.getZ();
+  }
+
+  add(vector: Vector3): Vector3 {
+    const newData = Array.from(this.data) as [number, number, number];
+    const newVector = new Vector3(newData);
+    newVector.setAdd(vector);
+    return newVector;
+  }
+
+  setSub(vector: Vector3): void {
+    this.data[0] -= vector.getX();
+    this.data[1] -= vector.getY();
+    this.data[2] -= vector.getZ();
+  }
+
+  sub(vector: Vector3): Vector3 {
+    const newData = Array.from(this.data) as [number, number, number];
+    const newVector = new Vector3(newData);
+    newVector.setSub(vector);
+    return newVector;
+  }
+
+  setMultiplyScalar(scalar: number): void {
+    this.data[0] *= scalar;
+    this.data[1] *= scalar;
+    this.data[2] *= scalar;
+  }
+
+  multiplyScalar(scalar: number): Vector3 {
+    const newData = Array.from(this.data) as [number, number, number];
+    const newVector = new Vector3(newData);
+    newVector.setMultiplyScalar(scalar);
+    return newVector;
+  }
+
+  setDivideScalar(scalar: number): void {
+    if (scalar === 0) {
+      throw new Error("Cannot divide by zero");
+    }
+
+    this.data[0] /= scalar;
+    this.data[1] /= scalar;
+    this.data[2] /= scalar;
+  }
+
+  divideScalar(scalar: number): Vector3 {
+    const newData = Array.from(this.data) as [number, number, number];
+    const newVector = new Vector3(newData);
+    newVector.setDivideScalar(scalar);
+    return newVector;
+  }
+
+  dot(vector: Vector3): number {
+    return (
+      this.data[0] * vector.getX() +
+      this.data[1] * vector.getY() +
+      this.data[2] * vector.getZ()
+    );
+  }
+
+  cross(vector: Vector3): Vector3 {
+    return new Vector3([
+      this.data[1] * vector.getZ() - this.data[2] * vector.getY(),
+      this.data[2] * vector.getX() - this.data[0] * vector.getZ(),
+      this.data[0] * vector.getY() - this.data[1] * vector.getX(),
+    ]);
+  }
+
+  getLength(): number {
+    return Math.sqrt(
+      this.data[0] * this.data[0] +
+        this.data[1] * this.data[1] +
+        this.data[2] * this.data[2]
+    );
+  }
+
+  setNormalize(): void {
+    const length = this.getLength();
+    if (length === 0) {
+      throw new Error("Cannot normalize the zero vector");
+    }
+
+    this.divideScalar(length);
+  }
+
+  normalize(): Vector3 {
+    const newData = Array.from(this.data) as [number, number, number];
+    const newVector = new Vector3(newData);
+    newVector.setNormalize();
+    return newVector;
   }
 }

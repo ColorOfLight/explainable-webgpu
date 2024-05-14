@@ -8,12 +8,12 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const scene = new SAM.Scene();
 
   const geometry = new SAM.SimpleTriangleGeometry(0.5);
-  const material = new SAM.BasicMaterial([1, 0, 0, 0]);
+  const material = new SAM.BasicMaterial(new SAM.Color([1, 0, 0, 0]));
 
   const mesh = new SAM.Mesh(geometry, material);
 
   const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
-  camera.position = new SAM.Vector3([0, 0, 1]);
+  camera.eye = new SAM.Vector3([0, 0, 1]);
 
   scene.add(mesh);
 

@@ -10,7 +10,7 @@ export class Geometry {
 
   constructor() {}
 
-  get vertexBufferData(): Float32Array {
+  getVertexBufferData(): Float32Array {
     const data = new Float32Array((3 + 4) * this.vertexes.length);
     const vertexByteSize = 3 + 4;
 

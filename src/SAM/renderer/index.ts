@@ -1,5 +1,4 @@
-import { Scene } from "../scene";
-import { Camera } from "../camera";
+import * as SAM from "@site/src/SAM";
 
 export class WebGPURenderer {
   status: "not-initialized" | "ready" | "device-destroyed" | "device-lost";
@@ -18,7 +17,7 @@ export class WebGPURenderer {
     this.canvas = canvas;
   }
 
-  async init() {
+  async init(): Promise<void> {
     if (this.status === "ready") {
       throw new Error("Renderer already initialized.");
     }
@@ -55,7 +54,7 @@ export class WebGPURenderer {
     this.status = "ready";
   }
 
-  render(scene: Scene, camera: Camera) {
+  render(scene: SAM.Scene, camera: SAM.Camera): void {
     if (this.status !== "ready") {
       throw new Error(
         `Renderer is not ready for rendering. Current status is: ${this.status}`
@@ -63,10 +62,16 @@ export class WebGPURenderer {
     }
 
     const firstMesh = scene.meshes[0];
-    const modelTransformData = firstMesh.modelTransformMatrix.renderingData;
-    const vertexData = firstMesh.geometry.vertexBufferData;
-    const projTransformData = camera.projTransformMatrix.renderingData;
-    const viewTransformData = camera.viewTransformMatrix.renderingData;
+    const modelTransformData = firstMesh
+      .getModelTransformMatrix()
+      .getRenderingData();
+    const vertexData = firstMesh.geometry.getVertexBufferData();
+    const projTransformData = camera
+      .getProjTransformMatrix()
+      .getRenderingData();
+    const viewTransformData = camera
+      .getViewTransformMatrix()
+      .getRenderingData();
 
     const vertexModule = this.device.createShaderModule(
       firstMesh.material.vertexDescriptor

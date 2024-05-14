@@ -1,21 +1,32 @@
-import { Vector3 } from "../vector";
-import { Matrix4 } from "../matrix";
+import * as SAM from "@site/src/SAM";
 
 export class Camera {
-  position: Vector3;
-  target: Vector3;
+  eye: SAM.Vector3;
+  target: SAM.Vector3;
 
-  constructor(position?: Vector3, target?: Vector3) {
-    this.target = target ?? new Vector3([0, 0, 0]);
-    this.position = position ?? new Vector3([0, 0, 1]);
+  constructor(eye?: SAM.Vector3, target?: SAM.Vector3) {
+    this.target = target ?? new SAM.Vector3([0, 0, 0]);
+    this.eye = eye ?? new SAM.Vector3([0, 0, 1]);
   }
 
-  get viewTransformMatrix(): Matrix4 {
-    return computeViewTransformMatrix(this.position, this.target);
+  getViewTransformMatrix(): SAM.Matrix4 {
+    const eyeFromTarget = this.eye.sub(this.target);
+
+    const zAxis = eyeFromTarget.normalize();
+    const xAxis = new SAM.Vector3([0, 1, 0]).cross(zAxis).normalize();
+    const yAxis = zAxis.cross(xAxis);
+
+    // prettier-ignore
+    return new SAM.Matrix4([
+      xAxis.getX(), xAxis.getY(), xAxis.getZ(), -xAxis.dot(this.eye),
+      yAxis.getX(), yAxis.getY(), yAxis.getZ(), -yAxis.dot(this.eye),
+      zAxis.getX(), zAxis.getY(), zAxis.getZ(), -zAxis.dot(this.eye),
+      0, 0, 0, 1,
+    ]);
   }
 
-  get projTransformMatrix(): Matrix4 {
-    const newMatrix = new Matrix4();
+  getProjTransformMatrix(): SAM.Matrix4 {
+    const newMatrix = new SAM.Matrix4();
     newMatrix.setIdentity();
     return newMatrix;
   }
@@ -47,9 +58,9 @@ export class OrthographicCamera extends Camera {
     this.far = far;
   }
 
-  get projTransformMatrix(): Matrix4 {
+  getProjTransformMatrix(): SAM.Matrix4 {
     // prettier-ignore
-    const projTransformMatrix = new Matrix4([
+    const projTransformMatrix = new SAM.Matrix4([
       2 / (this.right - this.left), 0, 0, (this.right + this.left) / (this.left - this.right),
       0, 2 / (this.top - this.bottom), 0, (this.top + this.bottom) / (this.bottom - this.top),
       0, 0, 1 / (this.near - this.far),  this.near / (this.near - this.far),
@@ -75,12 +86,12 @@ export class PerspectiveCamera extends Camera {
     this.far = far;
   }
 
-  get projTransformMatrix(): Matrix4 {
+  getProjTransformMatrix(): SAM.Matrix4 {
     const f = 1.0 / Math.tan(this.fov / 2);
     const nf = 1 / (this.near - this.far);
 
     // prettier-ignore
-    const projTransformMatrix = new Matrix4([
+    const projTransformMatrix = new SAM.Matrix4([
         f / this.aspect, 0, 0, 0,
         0, f, 0, 0,
         0, 0, this.far * nf, (this.far * this.near) * nf,
@@ -89,20 +100,4 @@ export class PerspectiveCamera extends Camera {
 
     return projTransformMatrix;
   }
-}
-
-function computeViewTransformMatrix(eye: Vector3, target: Vector3) {
-  const eyeFromTarget = eye.sub(target);
-
-  const zAxis = eyeFromTarget.normalize();
-  const xAxis = new Vector3([0, 1, 0]).cross(zAxis).normalize();
-  const yAxis = zAxis.cross(xAxis);
-
-  // prettier-ignore
-  return new Matrix4([
-    xAxis.x, yAxis.x, zAxis.x, -xAxis.dot(eye),
-    xAxis.y, yAxis.y, zAxis.y, -yAxis.dot(eye),
-    xAxis.z, yAxis.z, zAxis.z, -zAxis.dot(eye),
-    0, 0, 0, 1,
-  ]);
 }

@@ -1,33 +1,30 @@
-import { Geometry } from "../geometry";
-import { Material } from "../material";
-import { Vector3 } from "../vector";
-import { Matrix4 } from "../matrix";
+import * as SAM from "@site/src/SAM";
 
 export class Mesh {
-  geometry: Geometry;
-  material: Material;
-  translation: Vector3;
-  rotation: Vector3;
-  scale: Vector3;
+  geometry: SAM.Geometry;
+  material: SAM.Material;
+  translation: SAM.Vector3;
+  rotation: SAM.Vector3;
+  scale: SAM.Vector3;
 
-  constructor(geometry: Geometry, material: Material) {
+  constructor(geometry: SAM.Geometry, material: SAM.Material) {
     this.geometry = geometry;
     this.material = material;
 
-    this.translation = new Vector3([0, 0, 0]);
-    this.rotation = new Vector3([0, 0, 0]);
-    this.scale = new Vector3([1, 1, 1]);
+    this.translation = new SAM.Vector3([0, 0, 0]);
+    this.rotation = new SAM.Vector3([0, 0, 0]);
+    this.scale = new SAM.Vector3([1, 1, 1]);
   }
 
-  get modelTransformMatrix(): Matrix4 {
-    const matrix = new Matrix4();
+  getModelTransformMatrix(): SAM.Matrix4 {
+    const matrix = new SAM.Matrix4();
     matrix.setIdentity();
 
     matrix.setTranslate(this.translation);
     matrix.setScale(this.scale);
-    matrix.setRotateX(this.rotation.x);
-    matrix.setRotateY(this.rotation.y);
-    matrix.setRotateZ(this.rotation.z);
+    matrix.setRotateX(this.rotation.getX());
+    matrix.setRotateY(this.rotation.getY());
+    matrix.setRotateZ(this.rotation.getZ());
 
     return matrix;
   }

@@ -1,8 +1,11 @@
-import { Vector3 } from "../vector";
+import * as SAM from "@site/src/SAM";
 
+/**
+ * 4x4 matrix for 3D transformations.
+ * row-major order.
+ * When using data for rendering, you MUST use getRenderingData() method.
+ */
 export class Matrix4 {
-  // row-first order
-  // DON'T use for rendering data
   data: Float32Array;
 
   constructor(data?: number[]) {
@@ -18,7 +21,7 @@ export class Matrix4 {
     this.data = new Float32Array(data);
   }
 
-  get renderingData(): Float32Array {
+  getRenderingData(): Float32Array {
     return this.transpose().data;
   }
 
@@ -77,7 +80,7 @@ export class Matrix4 {
     this.data[15] = 1;
   }
 
-  setTranslate(vector: Vector3) {
+  setTranslate(vector: SAM.Vector3): void {
     const translationMatrix = new Matrix4([
       1,
       0,
@@ -99,14 +102,14 @@ export class Matrix4 {
     this.data = translationMatrix.multiply(this).data;
   }
 
-  translate(vector: Vector3): Matrix4 {
+  translate(vector: SAM.Vector3): Matrix4 {
     const newMatrix = new Matrix4();
     newMatrix.data = new Float32Array(this.data);
     newMatrix.setTranslate(vector);
     return newMatrix;
   }
 
-  setScale(vector: Vector3) {
+  setScale(vector: SAM.Vector3): void {
     const scaleMatrix = new Matrix4([
       vector.data[0],
       0,
@@ -128,14 +131,14 @@ export class Matrix4 {
     this.data = scaleMatrix.multiply(this).data;
   }
 
-  scale(vector: Vector3): Matrix4 {
+  scale(vector: SAM.Vector3): Matrix4 {
     const newMatrix = new Matrix4();
     newMatrix.data = new Float32Array(this.data);
     newMatrix.setScale(vector);
     return newMatrix;
   }
 
-  setRotateX(angle: number) {
+  setRotateX(angle: number): void {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
     const rotationMatrix = new Matrix4([
@@ -166,7 +169,7 @@ export class Matrix4 {
     return newMatrix;
   }
 
-  setRotateY(angle: number) {
+  setRotateY(angle: number): void {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
     const rotationMatrix = new Matrix4([
@@ -197,7 +200,7 @@ export class Matrix4 {
     return newMatrix;
   }
 
-  setRotateZ(angle: number) {
+  setRotateZ(angle: number): void {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
     const rotationMatrix = new Matrix4([

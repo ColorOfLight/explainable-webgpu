@@ -1,4 +1,4 @@
-import { Color } from "../types";
+import * as SAM from "@site/src/SAM";
 
 import BasicMaterialVertexShader from "../shaders/BasicMaterial/vertex.wgsl";
 import BasicMaterialFragmentShader from "../shaders/BasicMaterial/fragment.wgsl";
@@ -9,9 +9,9 @@ export class Material {
 }
 
 export class BasicMaterial extends Material {
-  color: Color;
+  color: SAM.Color;
 
-  constructor(color: Color) {
+  constructor(color: SAM.Color) {
     super();
     this.color = color;
     this.vertexDescriptor = {
