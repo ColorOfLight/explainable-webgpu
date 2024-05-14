@@ -8,6 +8,7 @@ export class OrbitalControl {
   prevY: number | undefined;
   listeners: EventListener[];
   rotationSpeed: number;
+  translationSpeed: number;
 
   constructor(targetElement: HTMLCanvasElement) {
     this.targetElement = targetElement;
@@ -16,6 +17,7 @@ export class OrbitalControl {
     this.prevY = undefined;
     this.listeners = [];
     this.rotationSpeed = 0.01;
+    this.translationSpeed = 0.005;
   }
 
   attachTo(camera: SAM.Camera): void {
@@ -24,18 +26,24 @@ export class OrbitalControl {
       this.isDragging = true;
       this.prevX = event.clientX;
       this.prevY = event.clientY;
+
+      event.preventDefault();
     });
 
     this.targetElement.addEventListener("mouseup", () => {
       this.isDragging = false;
       this.prevX = undefined;
       this.prevY = undefined;
+
+      event.preventDefault();
     });
 
     this.targetElement.addEventListener("mouseout", () => {
       this.isDragging = false;
       this.prevX = undefined;
       this.prevY = undefined;
+
+      event.preventDefault();
     });
 
     this.targetElement.addEventListener("mousemove", (event) => {
@@ -56,6 +64,30 @@ export class OrbitalControl {
         this.prevX = event.clientX;
         this.prevY = event.clientY;
       }
+
+      event.preventDefault();
+    });
+
+    this.targetElement.addEventListener("wheel", (event) => {
+      const deltaY = event.deltaY;
+
+      const cameraFromTarget = this.camera.eye.sub(this.camera.target);
+      const cameraFromTargetLength = cameraFromTarget.getLength();
+
+      if (
+        Math.abs(deltaY * this.translationSpeed) < cameraFromTargetLength ||
+        deltaY * cameraFromTargetLength < 0
+      ) {
+        this.camera.eye = this.camera.eye.sub(
+          cameraFromTarget.multiplyScalar(deltaY * this.translationSpeed)
+        );
+      }
+
+      event.preventDefault();
+    });
+
+    this.targetElement.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
     });
   }
 
