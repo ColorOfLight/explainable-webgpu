@@ -1,3 +1,4 @@
+import * as SAM from "@site/src/SAM";
 export class Vector3 {
   data: Float32Array;
 
@@ -115,7 +116,7 @@ export class Vector3 {
       throw new Error("Cannot normalize the zero vector");
     }
 
-    this.divideScalar(length);
+    this.setDivideScalar(length);
   }
 
   normalize(): Vector3 {
@@ -123,5 +124,35 @@ export class Vector3 {
     const newVector = new Vector3(newData);
     newVector.setNormalize();
     return newVector;
+  }
+
+  /*
+   * Uses Rodrigues' rotation formula.
+   */
+  setRotateAroundAxis(axis: SAM.Vector3, angle: number): void {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const normalizedAxis = axis.normalize();
+
+    const firstElement = this.multiplyScalar(cos);
+    const secondElement = normalizedAxis.cross(this).multiplyScalar(sin);
+    const thirdElement = normalizedAxis.multiplyScalar(
+      normalizedAxis.dot(this) * (1 - cos)
+    );
+
+    const newVector = firstElement.add(secondElement).add(thirdElement);
+
+    this.data = newVector.data;
+  }
+
+  rotateAroundAxis(axis: SAM.Vector3, angle: number): Vector3 {
+    const newData = Array.from(this.data) as [number, number, number];
+    const newVector = new Vector3(newData);
+    newVector.setRotateAroundAxis(axis, angle);
+    return newVector;
+  }
+
+  toString(): string {
+    return `(${this.data[0]}, ${this.data[1]}, ${this.data[2]})`;
   }
 }

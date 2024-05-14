@@ -3,17 +3,19 @@ import * as SAM from "@site/src/SAM";
 export class Camera {
   eye: SAM.Vector3;
   target: SAM.Vector3;
+  up: SAM.Vector3;
 
   constructor(eye?: SAM.Vector3, target?: SAM.Vector3) {
     this.target = target ?? new SAM.Vector3([0, 0, 0]);
     this.eye = eye ?? new SAM.Vector3([0, 0, 1]);
+    this.up = new SAM.Vector3([0, 1, 0]);
   }
 
   getViewTransformMatrix(): SAM.Matrix4 {
     const eyeFromTarget = this.eye.sub(this.target);
 
     const zAxis = eyeFromTarget.normalize();
-    const xAxis = new SAM.Vector3([0, 1, 0]).cross(zAxis).normalize();
+    const xAxis = this.up.cross(zAxis).normalize();
     const yAxis = zAxis.cross(xAxis);
 
     // prettier-ignore
