@@ -1,5 +1,13 @@
 import * as SAM from "@site/src/SAM";
 
+export interface DecomposedMatrixes {
+  translation: SAM.Matrix4;
+  rotation: SAM.Matrix4;
+  scale: SAM.Matrix4;
+}
+
+export type RotationAxis = "x" | "y" | "z";
+
 /**
  * 4x4 matrix for 3D transformations.
  * row-major order.
@@ -138,28 +146,41 @@ export class Matrix4 {
     return newMatrix;
   }
 
-  setRotateX(angle: number): void {
+  setRotate(angle: number, axis: RotationAxis) {
+    const { translation, rotation, scale } = this.decompose();
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
-    const rotationMatrix = new Matrix4([
-      1,
-      0,
-      0,
-      0,
-      0,
-      cos,
-      -sin,
-      0,
-      0,
-      sin,
-      cos,
-      0,
-      0,
-      0,
-      0,
-      1,
-    ]);
-    this.data = rotationMatrix.multiply(this).data;
+
+    // prettier-ignore
+    const newRotation: Matrix4 = {
+      x: new Matrix4([
+        1, 0, 0, 0,
+        0, cos, -sin, 0,
+        0, sin, cos, 0,
+        0, 0, 0, 1,
+      ]),
+      y: new Matrix4([
+        cos, 0, sin, 0,
+        0, 1, 0, 0,
+        -sin, 0, cos, 0,
+        0, 0, 0, 1,
+      ]),
+      z: new Matrix4([
+        cos, -sin, 0, 0,
+        sin, cos, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+      ]),
+    }[axis];
+
+    this.data = translation
+      .multiply(scale)
+      .multiply(newRotation)
+      .multiply(rotation).data;
+  }
+
+  setRotateX(angle: number): void {
+    this.setRotate(angle, "x");
   }
 
   rotateX(angle: number): Matrix4 {
@@ -170,27 +191,7 @@ export class Matrix4 {
   }
 
   setRotateY(angle: number): void {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    const rotationMatrix = new Matrix4([
-      cos,
-      0,
-      sin,
-      0,
-      0,
-      1,
-      0,
-      0,
-      -sin,
-      0,
-      cos,
-      0,
-      0,
-      0,
-      0,
-      1,
-    ]);
-    this.data = rotationMatrix.multiply(this).data;
+    this.setRotate(angle, "y");
   }
 
   rotateY(angle: number): Matrix4 {
@@ -201,27 +202,7 @@ export class Matrix4 {
   }
 
   setRotateZ(angle: number): void {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    const rotationMatrix = new Matrix4([
-      cos,
-      -sin,
-      0,
-      0,
-      sin,
-      cos,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      1,
-    ]);
-    this.data = rotationMatrix.multiply(this).data;
+    this.setRotate(angle, "z");
   }
 
   rotateZ(angle: number): Matrix4 {
@@ -249,5 +230,37 @@ export class Matrix4 {
       this.data[11];
 
     return new SAM.Vector3([x, y, z]);
+  }
+
+  decompose(): DecomposedMatrixes {
+    const scaleX = Math.hypot(this.data[0], this.data[4], this.data[8]);
+    const scaleY = Math.hypot(this.data[1], this.data[5], this.data[9]);
+    const scaleZ = Math.hypot(this.data[2], this.data[6], this.data[10]);
+
+    // prettier-ignore
+    const translation = new Matrix4([
+      1, 0, 0, this.data[3],
+      0, 1, 0, this.data[7],
+      0, 0, 1, this.data[11],
+      0, 0, 0, 1,
+    ]);
+
+    // prettier-ignore
+    const scale = new Matrix4([
+      scaleX, 0, 0, 0,
+      0, scaleY, 0, 0,
+      0, 0, scaleZ, 0,
+      0, 0, 0, 1,
+    ]);
+
+    // prettier-ignore
+    const rotation = new Matrix4([
+      this.data[0] / scaleX, this.data[1] / scaleX, this.data[2] / scaleX, 0,
+      this.data[4] / scaleY, this.data[5] / scaleY, this.data[6] / scaleY, 0,
+      this.data[8] / scaleZ, this.data[9] / scaleZ, this.data[10] / scaleZ, 0,
+      0, 0, 0, 1,
+    ]);
+
+    return { translation, rotation, scale };
   }
 }

@@ -47,6 +47,8 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   resizeObserver.observe(canvas);
 
   SAM.runTick(() => {
+    mesh2.setRotateY(0.01);
+
     renderer.render(scene, camera);
   });
 };
