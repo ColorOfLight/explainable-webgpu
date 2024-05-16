@@ -112,10 +112,10 @@ export class OrbitalControl {
       const deltaY = event.deltaY;
 
       if (
-        deltaY < 0 ||
+        deltaY > 0 ||
         Math.abs(deltaY * this.zoomingSpeed) < this.sphericalCoordinate.radius
       ) {
-        this.sphericalCoordinate.radius -= deltaY * this.zoomingSpeed;
+        this.sphericalCoordinate.radius += deltaY * this.zoomingSpeed;
         this.camera.eye = this.sphericalCoordinate.getDestination();
       }
 
