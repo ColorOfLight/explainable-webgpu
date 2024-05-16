@@ -7,7 +7,8 @@ interface SphericalCoordinateOptions {
 
 /*
  * Spherical coordinate system.
- * Start destination is (-1, 0, 0); polar is 0; azimuth is 0.
+ * Polar angle is the angle from the positive y-axis.
+ * Azimuth angle is the angle in the xy-plane from the positive x-axis.
  */
 export class SphericalCoordinate {
   origin: SAM.Vector3;
