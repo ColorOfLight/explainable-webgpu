@@ -9,3 +9,4 @@ export * from "./matrix";
 export * from "./color";
 export * from "./control";
 export * from "./utils";
+export * from "./coordinate";

@@ -18,3 +18,17 @@ export function runTick(
 
   return () => cancelAnimationFrame(frameId);
 }
+
+export function normalizeAngle(angle: number): number {
+  // Use the modulus operator to bring the angle within the range of -2π to 2π
+  angle = angle % (2 * Math.PI);
+
+  // Adjust the angle to be within the range of -π to π
+  if (angle < -Math.PI) {
+    angle += 2 * Math.PI;
+  } else if (angle > Math.PI) {
+    angle -= 2 * Math.PI;
+  }
+
+  return angle;
+}

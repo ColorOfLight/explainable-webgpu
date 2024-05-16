@@ -11,6 +11,9 @@ export class OrbitalControl {
   rotationSpeed: number;
   translationSpeed: number;
   zoomingSpeed: number;
+  targetWidth: number;
+  targetHeight: number;
+  sphericalCoordinate: SAM.SphericalCoordinate;
 
   constructor(targetElement: HTMLCanvasElement) {
     this.targetElement = targetElement;
@@ -19,13 +22,21 @@ export class OrbitalControl {
     this.prevX = undefined;
     this.prevY = undefined;
     this.listeners = [];
-    this.rotationSpeed = 0.01;
-    this.translationSpeed = 0.0001;
+    this.rotationSpeed = 4;
+    this.translationSpeed = 1;
     this.zoomingSpeed = 0.005;
+    this.targetWidth = targetElement.clientWidth;
+    this.targetHeight = targetElement.clientHeight;
+    this.sphericalCoordinate = new SAM.SphericalCoordinate({
+      maxInclination: Math.PI / 2,
+      minInclination: -Math.PI / 2,
+    });
   }
 
   attachTo(camera: SAM.Camera): void {
     this.camera = camera;
+    this.sphericalCoordinate.setFromPoints(camera.target, camera.eye);
+
     this.targetElement.addEventListener("mousedown", (event: MouseEvent) => {
       this.isDragging = true;
       this.prevX = event.clientX;
@@ -68,29 +79,31 @@ export class OrbitalControl {
           throw new Error("prevY is undefined");
         }
 
-        const deltaX = event.clientX - this.prevX;
-        const deltaY = event.clientY - this.prevY;
+        const deltaX = (event.clientX - this.prevX) / this.targetHeight;
+        const deltaY = (event.clientY - this.prevY) / this.targetHeight;
 
         if (this.isRightDragging) {
-          const cameraFromTarget = this.camera.eye.sub(this.camera.target);
-          const up = this.camera.up.normalize();
-          const right = cameraFromTarget.cross(up).normalize();
-          const projMatrix = this.camera.getViewTransformMatrix();
-          const translation = up
-            .multiplyScalar(deltaY * this.translationSpeed)
-            .add(right.multiplyScalar(deltaX * this.translationSpeed));
+          const temporalRight = this.camera.eye
+            .sub(this.camera.target)
+            .cross(this.camera.up);
 
-          this.camera.eye = this.camera.eye.add(translation);
-          this.camera.target = projMatrix.productVector3(
-            this.camera.target.add(translation)
+          this.sphericalCoordinate.origin.setAdd(
+            temporalRight.multiplyScalar(deltaX * this.translationSpeed)
+          );
+          this.sphericalCoordinate.origin.setAdd(
+            this.camera.up.multiplyScalar(deltaY * this.translationSpeed)
           );
         } else {
-          this.rotateCamera(deltaX, deltaY);
-
-          this.prevX = event.clientX;
-          this.prevY = event.clientY;
+          this.sphericalCoordinate.addAzimuth(deltaX * this.rotationSpeed);
+          this.sphericalCoordinate.addInclination(deltaY * this.rotationSpeed);
         }
       }
+
+      this.camera.eye = this.sphericalCoordinate.getDestination();
+      this.camera.up = this.sphericalCoordinate.getUp();
+
+      this.prevX = event.clientX;
+      this.prevY = event.clientY;
 
       event.preventDefault();
     });
@@ -98,37 +111,15 @@ export class OrbitalControl {
     this.targetElement.addEventListener("wheel", (event: WheelEvent) => {
       const deltaY = event.deltaY;
 
-      const cameraFromTarget = this.camera.eye.sub(this.camera.target);
-      const cameraFromTargetLength = cameraFromTarget.getLength();
-
       if (
-        Math.abs(deltaY * this.zoomingSpeed) < cameraFromTargetLength ||
-        deltaY * cameraFromTargetLength < 0
+        deltaY < 0 ||
+        Math.abs(deltaY * this.zoomingSpeed) < this.sphericalCoordinate.radius
       ) {
-        this.camera.eye = this.camera.eye.sub(
-          cameraFromTarget.multiplyScalar(deltaY * this.zoomingSpeed)
-        );
+        this.sphericalCoordinate.radius -= deltaY * this.zoomingSpeed;
+        this.camera.eye = this.sphericalCoordinate.getDestination();
       }
 
       event.preventDefault();
     });
-  }
-
-  rotateCamera(deltaX: number, deltaY: number): void {
-    const horizontalAngle = deltaX * this.rotationSpeed;
-    const verticalAngle = deltaY * this.rotationSpeed;
-
-    const direction = this.camera.eye.sub(this.camera.target);
-
-    const horizontalAxis = this.camera.up.normalize();
-    const verticalAxis = this.camera.up.cross(direction).normalize();
-
-    direction.setRotateAroundAxis(horizontalAxis, -horizontalAngle);
-    this.camera.up.setRotateAroundAxis(horizontalAxis, -horizontalAngle);
-
-    direction.setRotateAroundAxis(verticalAxis, -verticalAngle);
-    this.camera.up.setRotateAroundAxis(verticalAxis, -verticalAngle);
-
-    this.camera.eye = this.camera.target.add(direction);
   }
 }
