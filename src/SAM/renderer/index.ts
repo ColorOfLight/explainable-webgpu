@@ -13,11 +13,13 @@ export interface CameraBindItem {
 }
 
 export interface MeshBindItem {
-  bindGroup: GPUBindGroup;
-  bindGroupLayout: GPUBindGroupLayout;
+  modelBindGroup: GPUBindGroup;
+  modelBindGroupLayout: GPUBindGroupLayout;
   vertexBuffer: GPUBuffer;
   vertexBufferLayout: GPUVertexBufferLayout;
   vertexCount: number;
+  materialBindGroup: GPUBindGroup;
+  materialBindGroupLayout: GPUBindGroupLayout;
   vertexModule: GPUShaderModule;
   fragmentModule: GPUShaderModule;
 }
@@ -174,7 +176,11 @@ export class WebGPURenderer {
     return meshBindItems.map((meshBindItem, index) => {
       const pipelineLayout = this.device.createPipelineLayout({
         label: `Render Layout ${index}`,
-        bindGroupLayouts: [cameraBindGroupLayout, meshBindItem.bindGroupLayout],
+        bindGroupLayouts: [
+          cameraBindGroupLayout,
+          meshBindItem.modelBindGroupLayout,
+          meshBindItem.materialBindGroupLayout,
+        ],
       });
 
       const pipeline = this.device.createRenderPipeline({
@@ -197,7 +203,11 @@ export class WebGPURenderer {
 
       return {
         pipeline,
-        bindGroups: [cameraBindGroup, meshBindItem.bindGroup],
+        bindGroups: [
+          cameraBindGroup,
+          meshBindItem.modelBindGroup,
+          meshBindItem.materialBindGroup,
+        ],
         vertexBuffer: meshBindItem.vertexBuffer,
         vertexCount: meshBindItem.vertexCount,
       };
@@ -273,6 +283,7 @@ export class WebGPURenderer {
   generateMeshBindItem(mesh: SAM.Mesh): MeshBindItem {
     const modelTransformData = mesh.transformMatrix.getRenderingData();
     const vertexData = mesh.geometry.getVertexBufferData();
+    const uniformItems = mesh.material.getUniformItems();
 
     const vertexCount = vertexData.byteLength / (4 * (3 + 4));
 
@@ -297,6 +308,17 @@ export class WebGPURenderer {
     });
     this.device.queue.writeBuffer(modelTransformBuffer, 0, modelTransformData);
 
+    const materialBuffers = uniformItems.map((uniformItem) => {
+      const uniformBuffer = this.device.createBuffer({
+        label: uniformItem.label,
+        size: uniformItem.data.byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+      this.device.queue.writeBuffer(uniformBuffer, 0, uniformItem.data);
+
+      return uniformBuffer;
+    });
+
     const vertexBufferLayout: GPUVertexBufferLayout = {
       arrayStride: 4 * (3 + 4),
       attributes: [
@@ -315,7 +337,7 @@ export class WebGPURenderer {
       ],
     };
 
-    const bindGroupLayout: GPUBindGroupLayout =
+    const modelBindGroupLayout: GPUBindGroupLayout =
       this.device.createBindGroupLayout({
         label: "Model Bind Group Layout",
         entries: [
@@ -330,8 +352,8 @@ export class WebGPURenderer {
         ],
       });
 
-    const bindGroup = this.device.createBindGroup({
-      layout: bindGroupLayout,
+    const modelBindGroup = this.device.createBindGroup({
+      layout: modelBindGroupLayout,
       entries: [
         {
           binding: 0,
@@ -342,9 +364,32 @@ export class WebGPURenderer {
       ],
     });
 
+    const materialBindGroupLayout = this.device.createBindGroupLayout({
+      label: "Material Bind Group Layout",
+      entries: uniformItems.map((_, index) => ({
+        binding: index,
+        visibility: GPUShaderStage.FRAGMENT,
+        buffer: {
+          type: "uniform",
+        },
+      })),
+    });
+
+    const materialBindGroup = this.device.createBindGroup({
+      layout: materialBindGroupLayout,
+      entries: materialBuffers.map((buffer, index) => ({
+        binding: index,
+        resource: {
+          buffer,
+        },
+      })),
+    });
+
     return {
-      bindGroup,
-      bindGroupLayout,
+      modelBindGroup,
+      modelBindGroupLayout,
+      materialBindGroup,
+      materialBindGroupLayout,
       vertexBuffer,
       vertexBufferLayout,
       vertexModule,

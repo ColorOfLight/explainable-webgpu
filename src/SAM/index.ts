@@ -10,3 +10,4 @@ export * from "./color";
 export * from "./control";
 export * from "./utils";
 export * from "./coordinate";
+export * from "./types";
