@@ -6,5 +6,5 @@ struct FragmentInput {
 
 @fragment
 fn fragmentMain(input: FragmentInput) -> @location(0) vec4f {
-  return select(materialColor, input.color, materialColor.a >= 0);
+  return select(input.color, materialColor, materialColor.a >= 0);
 }
