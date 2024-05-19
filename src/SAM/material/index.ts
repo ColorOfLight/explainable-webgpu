@@ -4,16 +4,16 @@ import BasicMaterialVertexShader from "../shaders/BasicMaterial/vertex.wgsl";
 import BasicMaterialFragmentShader from "../shaders/BasicMaterial/fragment.wgsl";
 
 export interface MaterialOptions {
-  isWireFrame?: boolean;
+  isWireframe?: boolean;
 }
 
 export class Material {
   vertexDescriptor: GPUShaderModuleDescriptor;
   fragmentDescriptor: GPUShaderModuleDescriptor;
-  isWireFrame: boolean;
+  isWireframe: boolean;
 
   constructor(options?: MaterialOptions) {
-    this.isWireFrame = options?.isWireFrame ?? false;
+    this.isWireframe = options?.isWireframe ?? false;
   }
 
   getUniformItems(): SAM.UniformItem[] {
@@ -31,7 +31,7 @@ export class BasicMaterial extends Material {
   constructor(options?: BasicMaterialOptions) {
     super();
     this.color = options?.color ?? new SAM.Color([0, 0, 0, -1]);
-    this.isWireFrame = options?.isWireFrame ?? false;
+    this.isWireframe = options?.isWireframe ?? false;
     this.vertexDescriptor = {
       code: BasicMaterialVertexShader,
       label: "Basic Material Vertex Shader Module",

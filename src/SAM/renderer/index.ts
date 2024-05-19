@@ -292,10 +292,10 @@ export class WebGPURenderer {
   generateMeshBindItem(mesh: SAM.Mesh): MeshBindItem {
     const modelTransformData = mesh.transformMatrix.getRenderingData();
     const { vertexData, indexData, indexCount } = mesh.geometry.getBufferData({
-      isWireFrame: mesh.material.isWireFrame,
+      isWireframe: mesh.material.isWireframe,
     });
     const uniformItems = mesh.material.getUniformItems();
-    const topology = mesh.material.isWireFrame ? "line-list" : "triangle-list";
+    const topology = mesh.material.isWireframe ? "line-list" : "triangle-list";
 
     const vertexModule = this.device.createShaderModule(
       mesh.material.vertexDescriptor

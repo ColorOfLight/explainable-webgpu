@@ -6,7 +6,7 @@ export interface Vertex {
 }
 
 export interface GetIndexBufferDataOptions {
-  isWireFrame?: boolean;
+  isWireframe?: boolean;
 }
 
 export interface GeometryBufferData {
@@ -42,7 +42,7 @@ export class Geometry {
   }
 
   getIndexBufferData(options?: GetIndexBufferDataOptions): Uint16Array {
-    if (options?.isWireFrame) {
+    if (options?.isWireframe) {
       const indexBufferData = new Uint16Array(this.indexes.length * 2);
       for (let i = 0; i < this.indexes.length; i++) {
         if (i % 3 === 0) {
@@ -70,7 +70,7 @@ export class Geometry {
     return {
       vertexData: this.getVertexBufferData(),
       indexData: this.getIndexBufferData(options),
-      indexCount: options?.isWireFrame
+      indexCount: options?.isWireframe
         ? this.indexes.length * 2
         : this.indexes.length,
     };

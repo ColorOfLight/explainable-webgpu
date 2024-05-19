@@ -22,7 +22,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     geometry,
     new SAM.BasicMaterial({
       color: new SAM.Color([1, 0, 0, 0]),
-      isWireFrame: true,
+      isWireframe: true,
     })
   );
   mesh1.setTranslate(new SAM.Vector3([-0.5, 0, 0]));
@@ -31,7 +31,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const mesh2 = new SAM.Mesh(
     geometry,
-    new SAM.BasicMaterial({ isWireFrame: true })
+    new SAM.BasicMaterial({ isWireframe: true })
   );
   mesh2.setTranslate(new SAM.Vector3([0.5, 0, 0]));
 
@@ -60,7 +60,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   });
 };
 
-const WireFrameScene = () => {
+const WireframeScene = () => {
   const canvasRef = useRef<HTMLCanvasElement>();
 
   useEffect(() => {
@@ -70,4 +70,4 @@ const WireFrameScene = () => {
   return <canvas width="500" height="500" ref={canvasRef} />;
 };
 
-export default WireFrameScene;
+export default WireframeScene;
