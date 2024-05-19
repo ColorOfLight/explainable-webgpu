@@ -8,7 +8,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const scene = new SAM.Scene();
 
   const geometry = new SAM.SimpleTriangleGeometry(0.5);
-  const material = new SAM.BasicMaterial(new SAM.Color([1, 0, 0, 0]));
+  const material = new SAM.BasicMaterial();
 
   const mesh = new SAM.Mesh(geometry, material);
 
@@ -20,7 +20,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   renderer.render(scene, camera);
 };
 
-const DrawTriangleCanvas = () => {
+const DrawTriangleScene = () => {
   const canvasRef = useRef<HTMLCanvasElement>();
 
   useEffect(() => {
@@ -30,4 +30,4 @@ const DrawTriangleCanvas = () => {
   return <canvas width="500" height="500" ref={canvasRef} />;
 };
 
-export default DrawTriangleCanvas;
+export default DrawTriangleScene;

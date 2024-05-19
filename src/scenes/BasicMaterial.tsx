@@ -17,13 +17,19 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
       right: new SAM.Color([0, 0, 0.5, 1]),
     },
   });
-  const material = new SAM.BasicMaterial(new SAM.Color([1, 0, 0, 0]));
 
-  const mesh = new SAM.Mesh(geometry, material);
-  mesh.setRotateX(Math.PI / 4);
-  mesh.setRotateY(Math.PI / 4);
+  const mesh1 = new SAM.Mesh(
+    geometry,
+    new SAM.BasicMaterial(new SAM.Color([1, 0, 0, 0]))
+  );
+  mesh1.setTranslate(new SAM.Vector3([-0.5, 0, 0]));
 
-  scene.add(mesh);
+  scene.add(mesh1);
+
+  const mesh2 = new SAM.Mesh(geometry, new SAM.BasicMaterial());
+  mesh2.setTranslate(new SAM.Vector3([0.5, 0, 0]));
+
+  scene.add(mesh2);
 
   const camera = new SAM.PerspectiveCamera(
     Math.PI / 2,
@@ -31,7 +37,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     0.1,
     100
   );
-  // const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
+
   camera.eye = new SAM.Vector3([0, 0, 1]);
 
   const orbitalControl = new SAM.OrbitalControl(canvas);
@@ -41,11 +47,14 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   resizeObserver.observe(canvas);
 
   SAM.runTick(() => {
+    mesh1.setRotateX(0.01);
+    mesh2.setRotateY(0.01);
+
     renderer.render(scene, camera);
   });
 };
 
-const OrbitalControlCanvas = () => {
+const BasicMaterialScene = () => {
   const canvasRef = useRef<HTMLCanvasElement>();
 
   useEffect(() => {
@@ -55,4 +64,4 @@ const OrbitalControlCanvas = () => {
   return <canvas width="500" height="500" ref={canvasRef} />;
 };
 
-export default OrbitalControlCanvas;
+export default BasicMaterialScene;
