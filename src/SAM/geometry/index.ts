@@ -43,18 +43,23 @@ export class Geometry {
 
   getIndexBufferData(options?: GetIndexBufferDataOptions): Uint16Array {
     if (options?.isWireFrame) {
-      const newIndexes = [];
-      for (let i = 0; i < this.indexes.length; i += 3) {
-        const faceIndexes = this.indexes.slice(i, i + 3);
-        newIndexes.push(...faceIndexes, faceIndexes[0]);
+      const indexBufferData = new Uint16Array(this.indexes.length * 2);
+      for (let i = 0; i < this.indexes.length; i++) {
+        if (i % 3 === 0) {
+          indexBufferData[i * 2] = this.indexes[i];
+          indexBufferData[i * 2 + 5] = this.indexes[i];
+        } else {
+          indexBufferData[(i - 1) * 2 + 1] = this.indexes[i];
+          indexBufferData[i * 2] = this.indexes[i];
+        }
       }
 
-      return new Uint16Array(newIndexes); // Always multiply of 4
+      return indexBufferData;
     }
 
-    // Make sure the indexes are a multiple of 4 for the correct buffer size
+    // Make sure the indexes are a multiple of 4 bytes for the correct buffer size
     const indexBufferData = new Uint16Array(
-      Math.ceil(this.indexes.length / 4) * 4
+      Math.ceil(this.indexes.length / 2) * 2
     );
 
     indexBufferData.set(this.indexes);
@@ -66,7 +71,7 @@ export class Geometry {
       vertexData: this.getVertexBufferData(),
       indexData: this.getIndexBufferData(options),
       indexCount: options?.isWireFrame
-        ? (this.indexes.length / 3) * 4
+        ? this.indexes.length * 2
         : this.indexes.length,
     };
   }

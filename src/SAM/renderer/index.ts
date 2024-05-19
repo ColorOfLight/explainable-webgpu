@@ -188,11 +188,6 @@ export class WebGPURenderer {
         ],
       });
 
-      const primitive: GPUPrimitiveState =
-        meshBindItem.topology === "line-strip"
-          ? { topology: "line-strip", stripIndexFormat: "uint16" }
-          : { topology: "triangle-list" };
-
       const pipeline = this.device.createRenderPipeline({
         label: "Renderer Pipeline",
         layout: pipelineLayout,
@@ -209,7 +204,9 @@ export class WebGPURenderer {
           depthCompare: "less",
           format: "depth24plus",
         },
-        primitive,
+        primitive: {
+          topology: meshBindItem.topology,
+        },
       });
 
       return {
@@ -298,7 +295,7 @@ export class WebGPURenderer {
       isWireFrame: mesh.material.isWireFrame,
     });
     const uniformItems = mesh.material.getUniformItems();
-    const topology = mesh.material.isWireFrame ? "line-strip" : "triangle-list";
+    const topology = mesh.material.isWireFrame ? "line-list" : "triangle-list";
 
     const vertexModule = this.device.createShaderModule(
       mesh.material.vertexDescriptor
