@@ -32,3 +32,7 @@ export function normalizeAngle(angle: number): number {
 
   return angle;
 }
+
+export function generateNumberArray(n: number): number[] {
+  return Array.from({ length: n }, (_, i) => i);
+}

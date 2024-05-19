@@ -5,10 +5,24 @@ export interface Vertex {
   color?: SAM.Color;
 }
 
+export interface GetIndexBufferDataOptions {
+  isWireFrame?: boolean;
+}
+
+export interface GeometryBufferData {
+  vertexData: Float32Array;
+  indexData: Uint16Array;
+  indexCount: number;
+}
+
 export class Geometry {
   vertexes: Vertex[];
+  indexes: number[];
 
-  constructor() {}
+  constructor() {
+    this.vertexes = [];
+    this.indexes = [];
+  }
 
   getVertexBufferData(): Float32Array {
     const data = new Float32Array((3 + 4) * this.vertexes.length);
@@ -26,6 +40,36 @@ export class Geometry {
 
     return data;
   }
+
+  getIndexBufferData(options?: GetIndexBufferDataOptions): Uint16Array {
+    if (options?.isWireFrame) {
+      const newIndexes = [];
+      for (let i = 0; i < this.indexes.length; i += 3) {
+        const faceIndexes = this.indexes.slice(i, i + 3);
+        newIndexes.push(...faceIndexes, faceIndexes[0]);
+      }
+
+      return new Uint16Array(newIndexes); // Always multiply of 4
+    }
+
+    // Make sure the indexes are a multiple of 4 for the correct buffer size
+    const indexBufferData = new Uint16Array(
+      Math.ceil(this.indexes.length / 4) * 4
+    );
+
+    indexBufferData.set(this.indexes);
+    return indexBufferData;
+  }
+
+  getBufferData(options?: GetIndexBufferDataOptions): GeometryBufferData {
+    return {
+      vertexData: this.getVertexBufferData(),
+      indexData: this.getIndexBufferData(options),
+      indexCount: options?.isWireFrame
+        ? (this.indexes.length / 3) * 4
+        : this.indexes.length,
+    };
+  }
 }
 
 export class SimpleTriangleGeometry extends Geometry {
@@ -37,6 +81,8 @@ export class SimpleTriangleGeometry extends Geometry {
       { position: [-size, -size, 0], color: new SAM.Color([0, 1, 0, 1]) },
       { position: [size, -size, 0], color: new SAM.Color([0, 0, 1, 1]) },
     ];
+
+    this.indexes = SAM.generateNumberArray(this.vertexes.length);
   }
 }
 
@@ -135,5 +181,7 @@ export class CubeGeometry extends Geometry {
       ...leftVertexes,
       ...rightVertexes,
     ];
+
+    this.indexes = SAM.generateNumberArray(this.vertexes.length);
   }
 }

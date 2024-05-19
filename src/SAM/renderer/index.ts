@@ -4,7 +4,8 @@ export interface RenderItem {
   pipeline: GPURenderPipeline;
   bindGroups: GPUBindGroup[];
   vertexBuffer: GPUBuffer;
-  vertexCount: number;
+  indexBuffer: GPUBuffer;
+  indexCount: number;
 }
 
 export interface CameraBindItem {
@@ -17,11 +18,13 @@ export interface MeshBindItem {
   modelBindGroupLayout: GPUBindGroupLayout;
   vertexBuffer: GPUBuffer;
   vertexBufferLayout: GPUVertexBufferLayout;
-  vertexCount: number;
+  indexCount: number;
   materialBindGroup: GPUBindGroup;
   materialBindGroupLayout: GPUBindGroupLayout;
   vertexModule: GPUShaderModule;
   fragmentModule: GPUShaderModule;
+  indexBuffer: GPUBuffer;
+  topology: GPUPrimitiveTopology;
 }
 
 export class WebGPURenderer {
@@ -126,14 +129,16 @@ export class WebGPURenderer {
     const pass = encoder.beginRenderPass(renderPassDescriptor);
 
     renderItems.forEach((renderItem) => {
-      const { pipeline, bindGroups, vertexBuffer, vertexCount } = renderItem;
+      const { pipeline, bindGroups, vertexBuffer, indexBuffer, indexCount } =
+        renderItem;
 
       pass.setPipeline(pipeline);
       bindGroups.forEach((bindGroup, index) => {
         pass.setBindGroup(index, bindGroup);
       });
       pass.setVertexBuffer(0, vertexBuffer);
-      pass.draw(vertexCount, 1, 0, 0);
+      pass.setIndexBuffer(indexBuffer, "uint16");
+      pass.drawIndexed(indexCount, 1, 0, 0, 0);
     });
     pass.end();
 
@@ -183,6 +188,11 @@ export class WebGPURenderer {
         ],
       });
 
+      const primitive: GPUPrimitiveState =
+        meshBindItem.topology === "line-strip"
+          ? { topology: "line-strip", stripIndexFormat: "uint16" }
+          : { topology: "triangle-list" };
+
       const pipeline = this.device.createRenderPipeline({
         label: "Renderer Pipeline",
         layout: pipelineLayout,
@@ -199,6 +209,7 @@ export class WebGPURenderer {
           depthCompare: "less",
           format: "depth24plus",
         },
+        primitive,
       });
 
       return {
@@ -209,7 +220,8 @@ export class WebGPURenderer {
           meshBindItem.materialBindGroup,
         ],
         vertexBuffer: meshBindItem.vertexBuffer,
-        vertexCount: meshBindItem.vertexCount,
+        indexCount: meshBindItem.indexCount,
+        indexBuffer: meshBindItem.indexBuffer,
       };
     });
   }
@@ -282,10 +294,11 @@ export class WebGPURenderer {
 
   generateMeshBindItem(mesh: SAM.Mesh): MeshBindItem {
     const modelTransformData = mesh.transformMatrix.getRenderingData();
-    const vertexData = mesh.geometry.getVertexBufferData();
+    const { vertexData, indexData, indexCount } = mesh.geometry.getBufferData({
+      isWireFrame: mesh.material.isWireFrame,
+    });
     const uniformItems = mesh.material.getUniformItems();
-
-    const vertexCount = vertexData.byteLength / (4 * (3 + 4));
+    const topology = mesh.material.isWireFrame ? "line-strip" : "triangle-list";
 
     const vertexModule = this.device.createShaderModule(
       mesh.material.vertexDescriptor
@@ -336,6 +349,13 @@ export class WebGPURenderer {
         },
       ],
     };
+
+    const indexBuffer = this.device.createBuffer({
+      label: "Index Buffer",
+      size: indexData.byteLength,
+      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(indexBuffer, 0, indexData);
 
     const modelBindGroupLayout: GPUBindGroupLayout =
       this.device.createBindGroupLayout({
@@ -394,7 +414,9 @@ export class WebGPURenderer {
       vertexBufferLayout,
       vertexModule,
       fragmentModule,
-      vertexCount,
+      indexCount,
+      indexBuffer,
+      topology,
     };
   }
 }
