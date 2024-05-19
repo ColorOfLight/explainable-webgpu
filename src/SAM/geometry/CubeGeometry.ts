@@ -1,5 +1,6 @@
 import * as SAM from "@site/src/SAM";
-import { Geometry, Vertex } from "./_base";
+import { Geometry } from "./_base";
+import { generateCubePlaneVertexes, generatePlaneIndexes } from "./_utils";
 
 export interface CubeGeometryOptions {
   colors?: {
@@ -10,6 +11,9 @@ export interface CubeGeometryOptions {
     left: SAM.Color;
     right: SAM.Color;
   };
+  widthSegments?: number;
+  heightSegments?: number;
+  depthSegments?: number;
 }
 
 export class CubeGeometry extends Geometry {
@@ -21,10 +25,6 @@ export class CubeGeometry extends Geometry {
   ) {
     super();
 
-    const x = width / 2;
-    const y = height / 2;
-    const z = depth / 2;
-
     const defaultColor = new SAM.Color([1, 1, 1, 1]);
 
     const frontColor = options?.colors?.front || defaultColor;
@@ -34,59 +34,70 @@ export class CubeGeometry extends Geometry {
     const leftColor = options?.colors?.left || defaultColor;
     const rightColor = options?.colors?.right || defaultColor;
 
-    const frontVertexes: Vertex[] = [
-      { position: [-x, -y, z], color: frontColor },
-      { position: [x, -y, z], color: frontColor },
-      { position: [-x, y, z], color: frontColor },
-      { position: [x, y, z], color: frontColor },
-      { position: [-x, y, z], color: frontColor },
-      { position: [x, -y, z], color: frontColor },
-    ];
+    const widthSegments = options?.widthSegments ?? 1;
+    const heightSegments = options?.heightSegments ?? 1;
+    const depthSegments = options?.depthSegments ?? 1;
 
-    const backVertexes: Vertex[] = [
-      { position: [-x, -y, -z], color: backColor },
-      { position: [-x, y, -z], color: backColor },
-      { position: [x, -y, -z], color: backColor },
-      { position: [x, y, -z], color: backColor },
-      { position: [x, -y, -z], color: backColor },
-      { position: [-x, y, -z], color: backColor },
-    ];
-
-    const topVertexes: Vertex[] = [
-      { position: [-x, y, -z], color: topColor },
-      { position: [-x, y, z], color: topColor },
-      { position: [x, y, -z], color: topColor },
-      { position: [x, y, z], color: topColor },
-      { position: [x, y, -z], color: topColor },
-      { position: [-x, y, z], color: topColor },
-    ];
-
-    const bottomVertexes: Vertex[] = [
-      { position: [-x, -y, -z], color: bottomColor },
-      { position: [x, -y, -z], color: bottomColor },
-      { position: [-x, -y, z], color: bottomColor },
-      { position: [x, -y, z], color: bottomColor },
-      { position: [-x, -y, z], color: bottomColor },
-      { position: [x, -y, -z], color: bottomColor },
-    ];
-
-    const leftVertexes: Vertex[] = [
-      { position: [-x, -y, -z], color: leftColor },
-      { position: [-x, -y, z], color: leftColor },
-      { position: [-x, y, -z], color: leftColor },
-      { position: [-x, y, z], color: leftColor },
-      { position: [-x, y, -z], color: leftColor },
-      { position: [-x, -y, z], color: leftColor },
-    ];
-
-    const rightVertexes: Vertex[] = [
-      { position: [x, -y, -z], color: rightColor },
-      { position: [x, y, -z], color: rightColor },
-      { position: [x, -y, z], color: rightColor },
-      { position: [x, y, z], color: rightColor },
-      { position: [x, -y, z], color: rightColor },
-      { position: [x, y, -z], color: rightColor },
-    ];
+    const frontVertexes = generateCubePlaneVertexes(
+      new SAM.Vector3([1, 0, 0]),
+      new SAM.Vector3([0, 1, 0]),
+      width,
+      height,
+      depth,
+      widthSegments,
+      heightSegments,
+      frontColor
+    );
+    const backVertexes = generateCubePlaneVertexes(
+      new SAM.Vector3([-1, 0, 0]),
+      new SAM.Vector3([0, 1, 0]),
+      width,
+      height,
+      depth,
+      widthSegments,
+      heightSegments,
+      backColor
+    );
+    const topVertexes = generateCubePlaneVertexes(
+      new SAM.Vector3([1, 0, 0]),
+      new SAM.Vector3([0, 0, -1]),
+      width,
+      depth,
+      height,
+      widthSegments,
+      depthSegments,
+      topColor
+    );
+    const bottomVertexes = generateCubePlaneVertexes(
+      new SAM.Vector3([1, 0, 0]),
+      new SAM.Vector3([0, 0, 1]),
+      width,
+      depth,
+      height,
+      widthSegments,
+      depthSegments,
+      bottomColor
+    );
+    const leftVertexes = generateCubePlaneVertexes(
+      new SAM.Vector3([0, 0, 1]),
+      new SAM.Vector3([0, 1, 0]),
+      depth,
+      height,
+      width,
+      depthSegments,
+      heightSegments,
+      leftColor
+    );
+    const rightVertexes = generateCubePlaneVertexes(
+      new SAM.Vector3([0, 0, -1]),
+      new SAM.Vector3([0, 1, 0]),
+      depth,
+      height,
+      width,
+      depthSegments,
+      heightSegments,
+      rightColor
+    );
 
     this.vertexes = [
       ...frontVertexes,
@@ -97,6 +108,56 @@ export class CubeGeometry extends Geometry {
       ...rightVertexes,
     ];
 
-    this.indexes = SAM.generateNumberArray(this.vertexes.length);
+    let indexOffset = 0;
+
+    const frontIndexes = generatePlaneIndexes(
+      widthSegments,
+      heightSegments,
+      indexOffset
+    );
+    indexOffset += frontVertexes.length;
+
+    const backIndexes = generatePlaneIndexes(
+      widthSegments,
+      heightSegments,
+      indexOffset
+    );
+    indexOffset += backVertexes.length;
+
+    const topIndexes = generatePlaneIndexes(
+      widthSegments,
+      depthSegments,
+      indexOffset
+    );
+    indexOffset += topVertexes.length;
+
+    const bottomIndexes = generatePlaneIndexes(
+      widthSegments,
+      depthSegments,
+      indexOffset
+    );
+    indexOffset += bottomVertexes.length;
+
+    const leftIndexes = generatePlaneIndexes(
+      depthSegments,
+      heightSegments,
+      indexOffset
+    );
+    indexOffset += leftVertexes.length;
+
+    const rightIndexes = generatePlaneIndexes(
+      depthSegments,
+      heightSegments,
+      indexOffset
+    );
+
+    this.indexes = [
+      ...frontIndexes,
+      ...backIndexes,
+      ...topIndexes,
+      ...bottomIndexes,
+      ...leftIndexes,
+      ...rightIndexes,
+    ];
   }
 }

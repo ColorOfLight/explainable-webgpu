@@ -296,6 +296,7 @@ export class WebGPURenderer {
     });
     const uniformItems = mesh.material.getUniformItems();
     const topology = mesh.material.isWireframe ? "line-list" : "triangle-list";
+    const vertexByteSize = mesh.geometry.getVertexByteSize();
 
     const vertexModule = this.device.createShaderModule(
       mesh.material.vertexDescriptor
@@ -330,7 +331,7 @@ export class WebGPURenderer {
     });
 
     const vertexBufferLayout: GPUVertexBufferLayout = {
-      arrayStride: 4 * (3 + 4),
+      arrayStride: vertexByteSize,
       attributes: [
         {
           // Position
@@ -339,10 +340,22 @@ export class WebGPURenderer {
           shaderLocation: 0,
         },
         {
-          // Color
-          format: "float32x4" as const,
+          // Normal
+          format: "float32x3" as const,
           offset: 4 * 3,
           shaderLocation: 1,
+        },
+        {
+          // UV
+          format: "float32x2" as const,
+          offset: 4 * (3 + 3),
+          shaderLocation: 2,
+        },
+        {
+          // Color
+          format: "float32x4" as const,
+          offset: 4 * (3 + 3 + 2),
+          shaderLocation: 3,
         },
       ],
     };

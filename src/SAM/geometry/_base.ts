@@ -2,6 +2,8 @@ import * as SAM from "@site/src/SAM";
 
 export interface Vertex {
   position: [number, number, number]; // xyz
+  normal: [number, number, number]; // xyz
+  uv: [number, number]; // uv
   color?: SAM.Color;
 }
 
@@ -24,18 +26,32 @@ export class Geometry {
     this.indexes = [];
   }
 
+  getVertexByteSize(): number {
+    return (3 + 3 + 2 + 4) * 4;
+  }
+
   getVertexBufferData(): Float32Array {
-    const data = new Float32Array((3 + 4) * this.vertexes.length);
-    const vertexByteSize = 3 + 4;
+    const vertexFloat32Size = 3 + 3 + 2 + 4;
+    const data = new Float32Array(vertexFloat32Size * this.vertexes.length);
 
     for (let i = 0; i < this.vertexes.length; i++) {
       const vertex = this.vertexes[i];
-      data[i * vertexByteSize] = vertex.position[0];
-      data[i * vertexByteSize + 1] = vertex.position[1];
-      data[i * vertexByteSize + 2] = vertex.position[2];
-      data[i * vertexByteSize + 3] = vertex.color ? vertex.color.data[0] : 1;
-      data[i * vertexByteSize + 4] = vertex.color ? vertex.color.data[1] : 1;
-      data[i * vertexByteSize + 5] = vertex.color ? vertex.color.data[2] : 1;
+      data[i * vertexFloat32Size] = vertex.position[0];
+      data[i * vertexFloat32Size + 1] = vertex.position[1];
+      data[i * vertexFloat32Size + 2] = vertex.position[2];
+      data[i * vertexFloat32Size + 3] = vertex.normal[0];
+      data[i * vertexFloat32Size + 4] = vertex.normal[1];
+      data[i * vertexFloat32Size + 5] = vertex.normal[2];
+      data[i * vertexFloat32Size + 6] = vertex.uv[0];
+      data[i * vertexFloat32Size + 7] = vertex.uv[1];
+      data[i * vertexFloat32Size + 8] = vertex.color ? vertex.color.data[0] : 0;
+      data[i * vertexFloat32Size + 9] = vertex.color ? vertex.color.data[1] : 0;
+      data[i * vertexFloat32Size + 10] = vertex.color
+        ? vertex.color.data[2]
+        : 0;
+      data[i * vertexFloat32Size + 11] = vertex.color
+        ? vertex.color.data[3]
+        : -1;
     }
 
     return data;

@@ -155,4 +155,8 @@ export class Vector3 {
   toString(): string {
     return `(${this.data[0]}, ${this.data[1]}, ${this.data[2]})`;
   }
+
+  toNumberArray(): [number, number, number] {
+    return [this.data[0], this.data[1], this.data[2]];
+  }
 }
