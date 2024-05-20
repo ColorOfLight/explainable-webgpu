@@ -38,9 +38,11 @@ export class SphereGeometry extends Geometry {
         const azimuth = azimuthStep * i;
         sphericalCoord.setAzimuth(azimuth);
 
+        const positionVector = sphericalCoord.getDestination();
+
         const vertex = {
-          position: sphericalCoord.getDestination().toNumberArray(),
-          normal: sphericalCoord.getUp().toNumberArray(),
+          position: positionVector.toNumberArray(),
+          normal: positionVector.normalize().toNumberArray(),
           uv: [(i + uOffset) / widthSegments, j / heightSegments] as [
             number,
             number,
@@ -64,8 +66,8 @@ export class SphereGeometry extends Geometry {
           const bottomRight = (j + 1) * (heightSegments + 1) + i + 1;
 
           indexes[index++] = top;
-          indexes[index++] = bottomLeft;
           indexes[index++] = bottomRight;
+          indexes[index++] = bottomLeft;
         }
       } else if (j === heightSegments - 1) {
         for (let i = 0; i < widthSegments; i++) {
@@ -74,8 +76,8 @@ export class SphereGeometry extends Geometry {
           const topRight = j * (heightSegments + 1) + i + 1;
 
           indexes[index++] = bottom;
-          indexes[index++] = topRight;
           indexes[index++] = topLeft;
+          indexes[index++] = topRight;
         }
       } else {
         for (let i = 0; i < widthSegments; i++) {
@@ -85,12 +87,12 @@ export class SphereGeometry extends Geometry {
           const bottomRight = (j + 1) * (heightSegments + 1) + i + 1;
 
           indexes[index++] = topLeft;
-          indexes[index++] = bottomLeft;
           indexes[index++] = topRight;
+          indexes[index++] = bottomLeft;
 
           indexes[index++] = bottomLeft;
-          indexes[index++] = bottomRight;
           indexes[index++] = topRight;
+          indexes[index++] = bottomRight;
         }
       }
     }
