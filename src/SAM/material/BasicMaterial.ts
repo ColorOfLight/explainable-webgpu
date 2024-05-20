@@ -14,7 +14,7 @@ export class BasicMaterial extends Material {
   constructor(options?: BasicMaterialOptions) {
     super();
     this.color = options?.color ?? new SAM.Color([0, 0, 0, -1]);
-    this.isWireframe = options?.isWireframe ?? false;
+
     this.vertexDescriptor = {
       code: BasicMaterialVertexShader,
       label: "Basic Material Vertex Shader Module",
