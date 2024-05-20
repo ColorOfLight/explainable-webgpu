@@ -4,4 +4,8 @@ export class Color {
   constructor([r, g, b, a]: [number, number, number, number]) {
     this.data = new Float32Array([r, g, b, a]);
   }
+
+  toNumberArray(): number[] {
+    return Array.from(this.data);
+  }
 }

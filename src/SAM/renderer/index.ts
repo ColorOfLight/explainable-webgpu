@@ -13,6 +13,11 @@ export interface CameraBindItem {
   bindGroupLayout: GPUBindGroupLayout;
 }
 
+export interface LightsBindItem {
+  bindGroup: GPUBindGroup;
+  bindGroupLayout: GPUBindGroupLayout;
+}
+
 export interface MeshBindItem {
   modelBindGroup: GPUBindGroup;
   modelBindGroupLayout: GPUBindGroupLayout;
@@ -174,6 +179,10 @@ export class WebGPURenderer {
       bindGroup: cameraBindGroup,
       bindGroupLayout: cameraBindGroupLayout,
     } = this.generateCameraBindItem(camera);
+    const {
+      bindGroup: lightsBindGroup,
+      bindGroupLayout: lightsBindGroupLayout,
+    } = this.generateLightsBindItem(scene);
     const meshBindItems = scene.meshes.map((mesh) =>
       this.generateMeshBindItem(mesh)
     );
@@ -185,6 +194,7 @@ export class WebGPURenderer {
           cameraBindGroupLayout,
           meshBindItem.modelBindGroupLayout,
           meshBindItem.materialBindGroupLayout,
+          lightsBindGroupLayout,
         ],
       });
 
@@ -215,6 +225,7 @@ export class WebGPURenderer {
           cameraBindGroup,
           meshBindItem.modelBindGroup,
           meshBindItem.materialBindGroup,
+          lightsBindGroup,
         ],
         vertexBuffer: meshBindItem.vertexBuffer,
         indexCount: meshBindItem.indexCount,
@@ -281,6 +292,64 @@ export class WebGPURenderer {
           binding: 1,
           resource: {
             buffer: projTransformBuffer,
+          },
+        },
+      ],
+    });
+
+    return { bindGroup, bindGroupLayout };
+  }
+
+  generateLightsBindItem(scene: SAM.Scene): LightsBindItem {
+    const ambientLightsData = new Float32Array(
+      (1 + 3 + 4) *
+        SAM.MAX_AMBIENT_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(4) */
+    );
+    ambientLightsData.fill(0);
+
+    scene.lightSet.ambients.forEach((light, index) => {
+      if (index > SAM.MAX_AMBIENT_LIGHTS_DEFAULT) {
+        console.warn(
+          `Only ${SAM.MAX_AMBIENT_LIGHTS_DEFAULT} ambient lights are supported. Skipping additional lights.`
+        );
+        return;
+      }
+
+      ambientLightsData.set(
+        [light.intensity, 0, 0, 0, ...light.color.toNumberArray()],
+        (1 + 3 + 4) * index
+      );
+    });
+
+    const ambientLightsBuffer = this.device.createBuffer({
+      label: "Light Buffer",
+      size: ambientLightsData.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(ambientLightsBuffer, 0, ambientLightsData);
+
+    const bindGroupLayout: GPUBindGroupLayout =
+      this.device.createBindGroupLayout({
+        label: "Light Bind Group Layout",
+        entries: [
+          {
+            // Ambient Lights
+            binding: 0,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
+        ],
+      });
+
+    const bindGroup = this.device.createBindGroup({
+      layout: bindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: {
+            buffer: ambientLightsBuffer,
           },
         },
       ],
