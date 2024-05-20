@@ -7,10 +7,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const scene = new SAM.Scene();
 
-  const material = new SAM.BasicMaterial({
-    color: new SAM.Color([1, 0, 0, 0]),
-    isWireframe: true,
-  });
+  const material = new SAM.NormalMaterial();
 
   const planeGeometry = new SAM.PlaneGeometry(0.5, 0.5, {
     widthSegments: 5,
@@ -59,7 +56,6 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   SAM.runTick(() => {
     plane.setRotateX(0.01);
     cube.setRotateY(0.01);
-    sphere.setRotateZ(0.01);
 
     renderer.render(scene, camera);
   });
