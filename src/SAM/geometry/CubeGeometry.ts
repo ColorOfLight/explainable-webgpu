@@ -25,7 +25,7 @@ export class CubeGeometry extends Geometry {
   ) {
     super();
 
-    const defaultColor = new SAM.Color([1, 1, 1, 1]);
+    const defaultColor = new SAM.Color([1, 1, 1]);
 
     const frontColor = options?.colors?.front || defaultColor;
     const backColor = options?.colors?.back || defaultColor;
