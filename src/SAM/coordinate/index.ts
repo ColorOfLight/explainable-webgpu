@@ -3,6 +3,7 @@ import * as SAM from "@site/src/SAM";
 interface SphericalCoordinateOptions {
   maxInclination?: number;
   minInclination?: number;
+  radius?: number;
 }
 
 /*
@@ -20,7 +21,7 @@ export class SphericalCoordinate {
 
   constructor(options?: SphericalCoordinateOptions) {
     this.origin = new SAM.Vector3([0, 0, 0]);
-    this.radius = 1;
+    this.radius = options?.radius ?? 1;
     this.polar = 0;
     this.azimuth = 0;
     this.minInclination = options?.minInclination;
@@ -42,6 +43,23 @@ export class SphericalCoordinate {
 
   addAzimuth(azimuth: number): void {
     this.azimuth = SAM.normalizeAngle(this.azimuth + azimuth);
+  }
+
+  setInclination(polar: number): void {
+    this.polar = polar;
+
+    if (this.maxInclination != null && this.polar > this.maxInclination) {
+      this.polar = this.maxInclination;
+    } else if (
+      this.minInclination != null &&
+      this.polar < this.minInclination
+    ) {
+      this.polar = this.minInclination;
+    }
+  }
+
+  setAzimuth(azimuth: number): void {
+    this.azimuth = azimuth;
   }
 
   setFromPoints(origin: SAM.Vector3, destination: SAM.Vector3): void {
