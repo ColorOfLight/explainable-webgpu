@@ -2,12 +2,12 @@ struct VertexInput {
   @location(0) position: vec3f,
   @location(1) normal: vec3f,
   @location(2) uv: vec2f,
-  @location(3) color: vec4f,
+  @location(3) color: vec3f,
 };
 
 struct VertexOutput {
   @builtin(position) position: vec4f,
-  @location(1) color: vec4f,
+  @location(1) color: vec3f,
 };
 
 @group(0) @binding(0) var<uniform> viewMatrix: mat4x4f;

@@ -302,8 +302,8 @@ export class WebGPURenderer {
 
   generateLightsBindItem(scene: SAM.Scene): LightsBindItem {
     const ambientLightsData = new Float32Array(
-      (1 + 3 + 4) *
-        SAM.MAX_AMBIENT_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(4) */
+      (1 + 3 + 3 + 1) *
+        SAM.MAX_AMBIENT_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(3) + pad(1) */
     );
     ambientLightsData.fill(0);
 
@@ -316,8 +316,8 @@ export class WebGPURenderer {
       }
 
       ambientLightsData.set(
-        [light.intensity, 0, 0, 0, ...light.color.toNumberArray()],
-        (1 + 3 + 4) * index
+        [light.intensity, ...[0, 0, 0], ...light.color.toNumberArray(), 0],
+        (1 + 3 + 3 + 1) * index
       );
     });
 
@@ -422,7 +422,7 @@ export class WebGPURenderer {
         },
         {
           // Color
-          format: "float32x4" as const,
+          format: "float32x3" as const,
           offset: 4 * (3 + 3 + 2),
           shaderLocation: 3,
         },

@@ -9,7 +9,7 @@ export interface SimpleStandardMaterialOptions extends MaterialOptions {
 }
 
 export class SimpleStandardMaterial extends Material {
-  color: SAM.Color;
+  color?: SAM.Color;
 
   constructor(options?: SimpleStandardMaterialOptions) {
     super(options);
@@ -23,7 +23,7 @@ export class SimpleStandardMaterial extends Material {
       label: "Simple Standard Material Fragment Shader Module",
     };
 
-    this.color = options?.color ?? new SAM.Color([0, 0, 0, -1]);
+    this.color = options?.color;
   }
 
   getUniformItems(): SAM.UniformItem[] {

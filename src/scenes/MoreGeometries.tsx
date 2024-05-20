@@ -8,7 +8,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const scene = new SAM.Scene();
 
   const material = new SAM.BasicMaterial({
-    color: new SAM.Color([1, 0, 0, 0]),
+    color: new SAM.Color([1, 0, 0]),
     isWireframe: true,
   });
 

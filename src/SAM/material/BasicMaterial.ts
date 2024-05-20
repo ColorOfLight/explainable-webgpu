@@ -9,11 +9,11 @@ export interface BasicMaterialOptions extends MaterialOptions {
 }
 
 export class BasicMaterial extends Material {
-  color: SAM.Color;
+  color?: SAM.Color;
 
   constructor(options?: BasicMaterialOptions) {
     super(options);
-    this.color = options?.color ?? new SAM.Color([0, 0, 0, -1]);
+    this.color = options?.color ?? new SAM.Color([-1, -1, -1]);
 
     this.vertexDescriptor = {
       code: BasicMaterialVertexShader,

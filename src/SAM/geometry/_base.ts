@@ -49,9 +49,6 @@ export class Geometry {
       data[i * vertexFloat32Size + 10] = vertex.color
         ? vertex.color.data[2]
         : 0;
-      data[i * vertexFloat32Size + 11] = vertex.color
-        ? vertex.color.data[3]
-        : -1;
     }
 
     return data;

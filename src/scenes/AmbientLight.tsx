@@ -8,7 +8,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const scene = new SAM.Scene();
 
   const material = new SAM.SimpleStandardMaterial({
-    color: new SAM.Color([1, 1, 1, 1]),
+    color: new SAM.Color([1, 1, 1]),
   });
 
   const cubeGeometry = new SAM.CubeGeometry(0.5, 0.5, 0.5);
@@ -17,10 +17,10 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   scene.add(cube);
 
-  const light1 = new SAM.AmbientLight(new SAM.Color([1, 1, 0, 1]), 0.5);
+  const light1 = new SAM.AmbientLight(new SAM.Color([1, 1, 0]), 0.5);
   scene.add(light1);
 
-  const light2 = new SAM.AmbientLight(new SAM.Color([1, 0, 1, 1]), 0.2);
+  const light2 = new SAM.AmbientLight(new SAM.Color([1, 0, 1]), 0.2);
   scene.add(light2);
 
   const camera = new SAM.PerspectiveCamera(

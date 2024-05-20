@@ -9,18 +9,18 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const geometry = new SAM.CubeGeometry(0.5, 0.5, 0.5, {
     colors: {
-      front: new SAM.Color([0.5, 0.5, 0, 1]),
-      back: new SAM.Color([0.5, 0, 0.5, 1]),
-      top: new SAM.Color([0, 0.5, 0.5, 1]),
-      bottom: new SAM.Color([0.5, 0, 0, 1]),
-      left: new SAM.Color([0, 0.5, 0, 1]),
-      right: new SAM.Color([0, 0, 0.5, 1]),
+      front: new SAM.Color([0.5, 0.5, 0]),
+      back: new SAM.Color([0.5, 0, 0.5]),
+      top: new SAM.Color([0, 0.5, 0.5]),
+      bottom: new SAM.Color([0.5, 0, 0]),
+      left: new SAM.Color([0, 0.5, 0]),
+      right: new SAM.Color([0, 0, 0.5]),
     },
   });
 
   const mesh1 = new SAM.Mesh(
     geometry,
-    new SAM.BasicMaterial({ color: new SAM.Color([1, 0, 0, 0]) })
+    new SAM.BasicMaterial({ color: new SAM.Color([1, 0, 0]) })
   );
   mesh1.setTranslate(new SAM.Vector3([-0.5, 0, 0]));
 
