@@ -12,7 +12,7 @@ export class BasicMaterial extends Material {
   color: SAM.Color;
 
   constructor(options?: BasicMaterialOptions) {
-    super();
+    super(options);
     this.color = options?.color ?? new SAM.Color([0, 0, 0, -1]);
 
     this.vertexDescriptor = {
