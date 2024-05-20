@@ -23,14 +23,23 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     depthSegments: 5,
   });
 
+  const sphereGeometry = new SAM.SphereGeometry(0.25, {
+    widthSegments: 32,
+    heightSegments: 32,
+  });
+
   const plane = new SAM.Mesh(planeGeometry, material);
   plane.setTranslate(new SAM.Vector3([-0.5, 0, 0]));
 
   const cube = new SAM.Mesh(cubeGeometry, material);
   cube.setTranslate(new SAM.Vector3([0.5, 0, 0]));
 
+  const sphere = new SAM.Mesh(sphereGeometry, material);
+  sphere.setTranslate(new SAM.Vector3([0, 0, 0.5]));
+
   scene.add(plane);
   scene.add(cube);
+  scene.add(sphere);
 
   const camera = new SAM.PerspectiveCamera(
     Math.PI / 2,
