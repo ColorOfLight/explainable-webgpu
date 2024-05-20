@@ -35,7 +35,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   cube.setTranslate(new SAM.Vector3([0.5, 0, 0]));
 
   const sphere = new SAM.Mesh(sphereGeometry, material);
-  sphere.setTranslate(new SAM.Vector3([0, 0, 0.5]));
+  sphere.setTranslate(new SAM.Vector3([0, 0, -0.5]));
 
   scene.add(plane);
   scene.add(cube);
@@ -58,6 +58,8 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   SAM.runTick(() => {
     plane.setRotateX(0.01);
+    cube.setRotateY(0.01);
+    sphere.setRotateZ(0.01);
 
     renderer.render(scene, camera);
   });
