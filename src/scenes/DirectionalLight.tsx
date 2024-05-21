@@ -8,22 +8,28 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const scene = new SAM.Scene();
 
   const material = new SAM.PhongMaterial({
-    color: new SAM.Color([1, 1, 0]),
+    color: new SAM.Color([1, 0, 0]),
   });
 
-  const cubeGeometry = new SAM.SphereGeometry(0.5);
+  const cubeGeometry = new SAM.CubeGeometry(0.5, 0.5, 0.5);
+  const sphereGeometry = new SAM.SphereGeometry(0.3);
 
   const cube = new SAM.Mesh(cubeGeometry, material);
+  const sphere = new SAM.Mesh(sphereGeometry, material);
+
+  cube.setTranslate(new SAM.Vector3([-0.5, 0, 0]));
+  sphere.setTranslate(new SAM.Vector3([0.5, 0, 0]));
 
   scene.add(cube);
+  scene.add(sphere);
 
-  const light1 = new SAM.AmbientLight(new SAM.Color([1, 1, 1]), 0.4);
+  const light1 = new SAM.AmbientLight(new SAM.Color([1, 1, 1]), 0.1);
   scene.add(light1);
 
   const light2 = new SAM.DirectionalLight(
-    new SAM.Color([0, 1, 1]),
-    0.2,
-    new SAM.Vector3([0, 0, -1])
+    new SAM.Color([1, 1, 1]),
+    0.5,
+    new SAM.Vector3([1, 0, -1])
   );
   scene.add(light2);
 
@@ -44,6 +50,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   SAM.runTick(() => {
     cube.setRotateY(0.01);
+    sphere.setRotateY(0.01);
 
     renderer.render(scene, camera);
   });
