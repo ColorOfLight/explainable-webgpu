@@ -1,8 +1,8 @@
 const AMBIENT_LIGHTS_COUNT = 5;
 
 struct AmbientLight {
-  intensity: f32,
   color: vec3f,
+  intensity: f32,
 };
 
 struct AmbientLights {

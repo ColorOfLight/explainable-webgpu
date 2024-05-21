@@ -324,19 +324,19 @@ export class WebGPURenderer {
 
   generateLightsBindItem(scene: SAM.Scene): LightsBindItem {
     const ambientLightsData = new Float32Array(
-      (1 + 3 + 3 + 1) *
-        SAM.MAX_AMBIENT_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(3) + pad(1) */
+      /* color(3) + intensity(1) */
+      (3 + 1) * SAM.MAX_AMBIENT_LIGHTS_DEFAULT
     );
     ambientLightsData.fill(0);
 
     const directionalLightsData = new Float32Array(
-      (1 + 3 + 3 + 1 + 3 + 1) *
-        SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(3) + pad(1) + direction(3) + pad(1) */
+      /* color(3) + intensity(1) + direction(3) + pad(1) */
+      (3 + 1 + 3 + 1) * SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT
     );
 
     const pointLightsData = new Float32Array(
-      (1 + 3 + 3 + 1 + 3 + 1) *
-        SAM.MAX_POINT_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(3) + pad(1) + position(3) + pad(1) + decay(1) + pad(3) */
+      /* color(3) + intensity(1) + position(3) + decay(1) */
+      (3 + 1 + 3 + 1) * SAM.MAX_POINT_LIGHTS_DEFAULT
     );
 
     scene.lightSet.ambients.forEach((light, index) => {
@@ -348,8 +348,8 @@ export class WebGPURenderer {
       }
 
       ambientLightsData.set(
-        [light.intensity, ...[0, 0, 0], ...light.color.toNumberArray(), 0],
-        (1 + 3 + 3 + 1) * index
+        [...light.color.toNumberArray(), light.intensity],
+        (3 + 1) * index
       );
     });
 
@@ -363,14 +363,12 @@ export class WebGPURenderer {
 
       directionalLightsData.set(
         [
-          light.intensity,
-          ...[0, 0, 0],
           ...light.color.toNumberArray(),
-          0,
+          light.intensity,
           ...light.direction.toNumberArray(),
           0,
         ],
-        (1 + 3 + 3 + 1 + 3 + 1) * index
+        (3 + 1 + 3 + 1) * index
       );
     });
 
@@ -384,16 +382,13 @@ export class WebGPURenderer {
 
       pointLightsData.set(
         [
-          light.intensity,
-          ...[0, 0, 0],
           ...light.color.toNumberArray(),
-          0,
+          light.intensity,
           ...light.position.toNumberArray(),
-          // 0,
+
           light.decay,
-          // ...[0, 0, 0],
         ],
-        (1 + 3 + 3 + 1 + 3 + 1) * index
+        (3 + 1 + 3 + 1) * index
       );
     });
 

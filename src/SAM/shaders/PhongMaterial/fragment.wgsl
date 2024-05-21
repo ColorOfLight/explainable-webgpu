@@ -3,19 +3,19 @@ const DIRECTIONAL_LIGHTS_COUNT = 5;
 const POINT_LIGHTS_COUNT = 3;
 
 struct AmbientLight {
-  intensity: f32,
   color: vec3f,
+  intensity: f32,
 };
 
 struct DirectionalLight {
-  intensity: f32,
   color: vec3f,
+  intensity: f32,
   direction: vec3f,
 };
 
 struct PointLight {
-  intensity: f32,
   color: vec3f,
+  intensity: f32,
   position: vec3f,
   decay: f32,
 };
