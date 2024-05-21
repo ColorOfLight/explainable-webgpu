@@ -7,7 +7,9 @@ import SimpleStandardMaterialFragmentShader from "../shaders/SimpleStandardMater
 export interface SimpleStandardMaterialOptions extends MaterialOptions {
   color?: SAM.Color;
 }
-
+/*
+ * Only accept Ambient Light
+ */
 export class SimpleStandardMaterial extends Material {
   color?: SAM.Color;
 
