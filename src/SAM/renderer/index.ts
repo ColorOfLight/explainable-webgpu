@@ -307,6 +307,11 @@ export class WebGPURenderer {
     );
     ambientLightsData.fill(0);
 
+    const directionalLightsData = new Float32Array(
+      (1 + 3 + 3 + 1 + 3 + 1) *
+        SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(3) + pad(1) + direction(3) + pad(1) */
+    );
+
     scene.lightSet.ambients.forEach((light, index) => {
       if (index > SAM.MAX_AMBIENT_LIGHTS_DEFAULT) {
         console.warn(
@@ -321,12 +326,44 @@ export class WebGPURenderer {
       );
     });
 
+    scene.lightSet.directionals.forEach((light, index) => {
+      if (index > SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT) {
+        console.warn(
+          `Only ${SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT} directional lights are supported. Skipping additional lights.`
+        );
+        return;
+      }
+
+      directionalLightsData.set(
+        [
+          light.intensity,
+          ...[0, 0, 0],
+          ...light.color.toNumberArray(),
+          0,
+          ...light.direction.toNumberArray(),
+          0,
+        ],
+        (1 + 3 + 3 + 1 + 3 + 1) * index
+      );
+    });
+
     const ambientLightsBuffer = this.device.createBuffer({
-      label: "Light Buffer",
+      label: "Ambient Lights Buffer",
       size: ambientLightsData.byteLength,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     this.device.queue.writeBuffer(ambientLightsBuffer, 0, ambientLightsData);
+
+    const directionalLightsBuffer = this.device.createBuffer({
+      label: "Directional Lights Buffer",
+      size: directionalLightsData.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(
+      directionalLightsBuffer,
+      0,
+      directionalLightsData
+    );
 
     const bindGroupLayout: GPUBindGroupLayout =
       this.device.createBindGroupLayout({
@@ -335,6 +372,14 @@ export class WebGPURenderer {
           {
             // Ambient Lights
             binding: 0,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
+          {
+            // Directional Lights
+            binding: 1,
             visibility: GPUShaderStage.FRAGMENT,
             buffer: {
               type: "uniform" as const,
@@ -350,6 +395,12 @@ export class WebGPURenderer {
           binding: 0,
           resource: {
             buffer: ambientLightsBuffer,
+          },
+        },
+        {
+          binding: 1,
+          resource: {
+            buffer: directionalLightsBuffer,
           },
         },
       ],

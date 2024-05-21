@@ -2,6 +2,7 @@ import * as SAM from "@site/src/SAM";
 
 export interface LightSet {
   ambients: SAM.AmbientLight[];
+  directionals: SAM.DirectionalLight[];
 }
 export class Scene {
   meshes: SAM.Mesh[];
@@ -11,6 +12,7 @@ export class Scene {
     this.meshes = [];
     this.lightSet = {
       ambients: [],
+      directionals: [],
     };
   }
 
@@ -28,6 +30,19 @@ export class Scene {
       }
 
       this.lightSet.ambients.push(object);
+      return;
+    }
+
+    if (object instanceof SAM.DirectionalLight) {
+      if (
+        this.lightSet.directionals.length >= SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT
+      ) {
+        throw new Error(
+          `You can use up to ${SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT} directional lights in a scene.`
+        );
+      }
+
+      this.lightSet.directionals.push(object);
       return;
     }
 
