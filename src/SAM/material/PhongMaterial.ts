@@ -37,9 +37,9 @@ export class PhongMaterial extends Material {
 
     this.color = options?.color;
 
-    this.diffuse = options?.diffuse ?? 0.5;
-    this.specular = options?.specular ?? 0.5;
-    this.alpha = options?.alpha ?? 32;
+    this.diffuse = options?.diffuse ?? 1;
+    this.specular = options?.specular ?? 1;
+    this.alpha = options?.alpha ?? 16;
   }
 
   getUniformItems(): SAM.UniformItem[] {
