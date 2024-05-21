@@ -32,6 +32,10 @@ export class Camera {
     newMatrix.setIdentity();
     return newMatrix;
   }
+
+  getViewVectorFromTarget(): SAM.Vector3 {
+    return this.target.sub(this.eye).normalize();
+  }
 }
 
 export class OrthographicCamera extends Camera {

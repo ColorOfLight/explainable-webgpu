@@ -241,6 +241,7 @@ export class WebGPURenderer {
     const viewTransformData = camera
       .getViewTransformMatrix()
       .getRenderingData();
+    const viewVector = camera.getViewVectorFromTarget().getData();
 
     const viewTransformBuffer = this.device.createBuffer({
       label: "View Transform Buffer",
@@ -255,6 +256,13 @@ export class WebGPURenderer {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     this.device.queue.writeBuffer(projTransformBuffer, 0, projTransformData);
+
+    const viewVectorBuffer = this.device.createBuffer({
+      label: "View Vector Buffer",
+      size: viewVector.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(viewVectorBuffer, 0, viewVector);
 
     const bindGroupLayout: GPUBindGroupLayout =
       this.device.createBindGroupLayout({
@@ -276,6 +284,14 @@ export class WebGPURenderer {
               type: "uniform" as const,
             },
           },
+          {
+            // View Vector
+            binding: 2,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
         ],
       });
 
@@ -292,6 +308,12 @@ export class WebGPURenderer {
           binding: 1,
           resource: {
             buffer: projTransformBuffer,
+          },
+        },
+        {
+          binding: 2,
+          resource: {
+            buffer: viewVectorBuffer,
           },
         },
       ],
