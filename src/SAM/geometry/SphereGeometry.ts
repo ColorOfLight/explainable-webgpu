@@ -62,8 +62,8 @@ export class SphereGeometry extends Geometry {
       if (j === 0) {
         for (let i = 0; i < widthSegments; i++) {
           const top = i;
-          const bottomLeft = (j + 1) * (heightSegments + 1) + i;
-          const bottomRight = (j + 1) * (heightSegments + 1) + i + 1;
+          const bottomLeft = (j + 1) * (widthSegments + 1) + i;
+          const bottomRight = (j + 1) * (widthSegments + 1) + i + 1;
 
           indexes[index++] = top;
           indexes[index++] = bottomRight;
@@ -71,9 +71,9 @@ export class SphereGeometry extends Geometry {
         }
       } else if (j === heightSegments - 1) {
         for (let i = 0; i < widthSegments; i++) {
-          const bottom = (j + 1) * (heightSegments + 1) + i;
-          const topLeft = j * (heightSegments + 1) + i;
-          const topRight = j * (heightSegments + 1) + i + 1;
+          const bottom = (j + 1) * (widthSegments + 1) + i;
+          const topLeft = j * (widthSegments + 1) + i;
+          const topRight = j * (widthSegments + 1) + i + 1;
 
           indexes[index++] = bottom;
           indexes[index++] = topLeft;
@@ -81,10 +81,10 @@ export class SphereGeometry extends Geometry {
         }
       } else {
         for (let i = 0; i < widthSegments; i++) {
-          const topLeft = j * (heightSegments + 1) + i;
-          const topRight = j * (heightSegments + 1) + i + 1;
-          const bottomLeft = (j + 1) * (heightSegments + 1) + i;
-          const bottomRight = (j + 1) * (heightSegments + 1) + i + 1;
+          const topLeft = j * (widthSegments + 1) + i;
+          const topRight = j * (widthSegments + 1) + i + 1;
+          const bottomLeft = (j + 1) * (widthSegments + 1) + i;
+          const bottomRight = (j + 1) * (widthSegments + 1) + i + 1;
 
           indexes[index++] = topLeft;
           indexes[index++] = topRight;
