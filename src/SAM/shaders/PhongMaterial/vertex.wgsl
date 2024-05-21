@@ -7,6 +7,7 @@ struct VertexInput {
 
 struct VertexOutput {
   @builtin(position) position: vec4f,
+  @location(0) fragmentPosition: vec3f,
   @location(1) color: vec3f,
   @location(2) normal: vec3f,
 };
@@ -18,8 +19,12 @@ struct VertexOutput {
 @vertex
 fn vertexMain(input: VertexInput) -> VertexOutput  {
   var output: VertexOutput;
-  output.position = projMatrix * viewMatrix * modelMatrix * vec4f(input.position, 1);
-  
+
+  let modelPosition = modelMatrix * vec4f(input.position, 1);
+
+  output.position = projMatrix * viewMatrix * modelPosition;
+
+  output.fragmentPosition = modelPosition.xyz;
   output.color = input.color;
   output.normal = normalize((modelMatrix * vec4f(input.normal, 1)).xyz);
 

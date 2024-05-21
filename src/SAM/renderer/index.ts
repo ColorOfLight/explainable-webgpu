@@ -241,7 +241,7 @@ export class WebGPURenderer {
     const viewTransformData = camera
       .getViewTransformMatrix()
       .getRenderingData();
-    const viewVector = camera.getViewVectorFromTarget().getData();
+    const eyePosition = camera.getEyeVector().getData();
 
     const viewTransformBuffer = this.device.createBuffer({
       label: "View Transform Buffer",
@@ -257,12 +257,12 @@ export class WebGPURenderer {
     });
     this.device.queue.writeBuffer(projTransformBuffer, 0, projTransformData);
 
-    const viewVectorBuffer = this.device.createBuffer({
+    const eyePositionBuffer = this.device.createBuffer({
       label: "View Vector Buffer",
-      size: viewVector.byteLength,
+      size: eyePosition.byteLength,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
-    this.device.queue.writeBuffer(viewVectorBuffer, 0, viewVector);
+    this.device.queue.writeBuffer(eyePositionBuffer, 0, eyePosition);
 
     const bindGroupLayout: GPUBindGroupLayout =
       this.device.createBindGroupLayout({
@@ -313,7 +313,7 @@ export class WebGPURenderer {
         {
           binding: 2,
           resource: {
-            buffer: viewVectorBuffer,
+            buffer: eyePositionBuffer,
           },
         },
       ],
@@ -332,6 +332,11 @@ export class WebGPURenderer {
     const directionalLightsData = new Float32Array(
       (1 + 3 + 3 + 1 + 3 + 1) *
         SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(3) + pad(1) + direction(3) + pad(1) */
+    );
+
+    const pointLightsData = new Float32Array(
+      (1 + 3 + 3 + 1 + 3 + 1) *
+        SAM.MAX_POINT_LIGHTS_DEFAULT /* intensity(1) + pad(3) + color(3) + pad(1) + position(3) + pad(1) + decay(1) + pad(3) */
     );
 
     scene.lightSet.ambients.forEach((light, index) => {
@@ -369,6 +374,29 @@ export class WebGPURenderer {
       );
     });
 
+    scene.lightSet.points.forEach((light, index) => {
+      if (index > SAM.MAX_POINT_LIGHTS_DEFAULT) {
+        console.warn(
+          `Only ${SAM.MAX_POINT_LIGHTS_DEFAULT} point lights are supported. Skipping additional lights.`
+        );
+        return;
+      }
+
+      pointLightsData.set(
+        [
+          light.intensity,
+          ...[0, 0, 0],
+          ...light.color.toNumberArray(),
+          0,
+          ...light.position.toNumberArray(),
+          // 0,
+          light.decay,
+          // ...[0, 0, 0],
+        ],
+        (1 + 3 + 3 + 1 + 3 + 1) * index
+      );
+    });
+
     const ambientLightsBuffer = this.device.createBuffer({
       label: "Ambient Lights Buffer",
       size: ambientLightsData.byteLength,
@@ -386,6 +414,13 @@ export class WebGPURenderer {
       0,
       directionalLightsData
     );
+
+    const pointLightsBuffer = this.device.createBuffer({
+      label: "Point Lights Buffer",
+      size: pointLightsData.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(pointLightsBuffer, 0, pointLightsData);
 
     const bindGroupLayout: GPUBindGroupLayout =
       this.device.createBindGroupLayout({
@@ -407,6 +442,14 @@ export class WebGPURenderer {
               type: "uniform" as const,
             },
           },
+          {
+            // Point Lights
+            binding: 2,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
         ],
       });
 
@@ -423,6 +466,12 @@ export class WebGPURenderer {
           binding: 1,
           resource: {
             buffer: directionalLightsBuffer,
+          },
+        },
+        {
+          binding: 2,
+          resource: {
+            buffer: pointLightsBuffer,
           },
         },
       ],

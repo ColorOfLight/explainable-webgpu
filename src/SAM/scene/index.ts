@@ -3,6 +3,7 @@ import * as SAM from "@site/src/SAM";
 export interface LightSet {
   ambients: SAM.AmbientLight[];
   directionals: SAM.DirectionalLight[];
+  points: SAM.PointLight[];
 }
 export class Scene {
   meshes: SAM.Mesh[];
@@ -13,6 +14,7 @@ export class Scene {
     this.lightSet = {
       ambients: [],
       directionals: [],
+      points: [],
     };
   }
 
@@ -43,6 +45,17 @@ export class Scene {
       }
 
       this.lightSet.directionals.push(object);
+      return;
+    }
+
+    if (object instanceof SAM.PointLight) {
+      if (this.lightSet.points.length >= SAM.MAX_POINT_LIGHTS_DEFAULT) {
+        throw new Error(
+          `You can use up to ${SAM.MAX_POINT_LIGHTS_DEFAULT} point lights in a scene.`
+        );
+      }
+
+      this.lightSet.points.push(object);
       return;
     }
 

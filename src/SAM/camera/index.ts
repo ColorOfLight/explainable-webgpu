@@ -33,8 +33,8 @@ export class Camera {
     return newMatrix;
   }
 
-  getViewVectorFromTarget(): SAM.Vector3 {
-    return this.target.sub(this.eye).normalize();
+  getEyeVector(): SAM.Vector3 {
+    return this.eye;
   }
 }
 
