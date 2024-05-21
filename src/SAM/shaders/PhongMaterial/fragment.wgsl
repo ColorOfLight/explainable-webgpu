@@ -38,21 +38,24 @@ fn fragmentMain(input: FragmentInput) -> @location(0) vec4f {
   var baseColor = select(input.color, materialColor, materialColor.r >= 0);
   var outputColor = vec3f(0.0);
 
+  // Normalize the interpolated normal
+  let normal = normalize(input.normal);
+
   for (var i = 0; i < AMBIENT_LIGHTS_COUNT; i = i + 1) {
     let light = ambientLights.light[i];
-    outputColor = outputColor + baseColor * light.color * light.intensity;
+    outputColor = outputColor + baseColor * light.color * light.intensity * diffuse;
   }
 
   for (var i = 0; i < DIRECTIONAL_LIGHTS_COUNT; i = i + 1) {
     let light = directionalLights.light[i];
 
     let lightVector = normalize(-light.direction);
-    let reflection = reflect(lightVector, viewVector);
+    let reflection = reflect(lightVector, normal);
 
-    let diffuseAmount = diffuse * max(0.0, dot(lightVector, input.normal));
-    let specularAmount = specular * pow(max(0.0, dot(reflection, viewVector)), alpha);
+    let diffuseColor = diffuse * max(0.0, dot(lightVector, normal)) * baseColor;
+    let specularColor = specular * pow(max(0.0, dot(reflection, viewVector)), alpha) * light.color;
 
-    outputColor = outputColor + baseColor * light.color * light.intensity * (diffuseAmount + specularAmount);
+    outputColor = outputColor + light.intensity * (diffuseColor + specularColor);
   }
 
   return vec4f(outputColor, 1);
