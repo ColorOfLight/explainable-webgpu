@@ -7,8 +7,8 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const scene = new SAM.Scene();
 
-  const material = new SAM.PhongMaterial({
-    color: new SAM.Color([1, 1, 1]),
+  const material = new SAM.UVMaterial({
+    pattern: "checkerboard",
   });
 
   const cubeGeometry = new SAM.CubeGeometry(0.5, 0.5, 0.5);
