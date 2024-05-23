@@ -8,7 +8,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const scene = new SAM.Scene();
 
   const material = new SAM.UVMaterial({
-    pattern: "checkerboard",
+    pattern: "gradient",
   });
 
   const cubeGeometry = new SAM.CubeGeometry(0.5, 0.5, 0.5);
