@@ -1,8 +1,19 @@
 import * as SAM from "@site/src/SAM";
 
+import EnvRenderVertexShader from "@site/src/SAM/shaders/EnvironmentRender/vertex.wgsl";
+import EnvRenderFragmentShader from "@site/src/SAM/shaders/EnvironmentRender/fragment.wgsl";
+
 export interface RenderItem {
   pipeline: GPURenderPipeline;
   bindGroups: GPUBindGroup[];
+  vertexBuffer: GPUBuffer;
+  indexBuffer: GPUBuffer;
+  indexCount: number;
+}
+
+export interface EnvironmentRenderItem {
+  pipeline: GPURenderPipeline;
+  bindGroup: GPUBindGroup;
   vertexBuffer: GPUBuffer;
   indexBuffer: GPUBuffer;
   indexCount: number;
@@ -93,6 +104,8 @@ export class WebGPURenderer {
       );
     }
 
+    const envRenderItem: EnvironmentRenderItem | undefined =
+      this.generateEnvRenderItem(scene, camera);
     const renderItems = this.generateRenderItems(scene, camera);
 
     const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -133,6 +146,20 @@ export class WebGPURenderer {
     });
     const pass = encoder.beginRenderPass(renderPassDescriptor);
 
+    // Environment Rendering
+    if (envRenderItem != null) {
+      ((renderItem: EnvironmentRenderItem) => {
+        const { pipeline, bindGroup, vertexBuffer, indexBuffer, indexCount } =
+          renderItem;
+
+        pass.setPipeline(pipeline);
+        pass.setBindGroup(0, bindGroup);
+        pass.setVertexBuffer(0, vertexBuffer);
+        pass.setIndexBuffer(indexBuffer, "uint16");
+        pass.drawIndexed(indexCount, 1, 0, 0, 0);
+      })(envRenderItem);
+    }
+
     renderItems.forEach((renderItem) => {
       const { pipeline, bindGroups, vertexBuffer, indexBuffer, indexCount } =
         renderItem;
@@ -145,6 +172,7 @@ export class WebGPURenderer {
       pass.setIndexBuffer(indexBuffer, "uint16");
       pass.drawIndexed(indexCount, 1, 0, 0, 0);
     });
+
     pass.end();
 
     const commandBuffer = encoder.finish();
@@ -172,6 +200,214 @@ export class WebGPURenderer {
         callback?.();
       }
     });
+  }
+
+  generateEnvRenderItem(
+    scene: SAM.Scene,
+    camera: SAM.Camera
+  ): EnvironmentRenderItem | undefined {
+    const sceneEnv = scene.getEnvironment();
+
+    if (sceneEnv == null) {
+      return undefined;
+    }
+
+    const {
+      cubeMapTexture,
+      vertexPositionBufferData,
+      indexBufferData,
+      vertexByteSize,
+      indexCount,
+    } = sceneEnv;
+
+    const faceImageBitmaps = cubeMapTexture.getData();
+
+    if (faceImageBitmaps.length !== 6) {
+      throw new Error("CubeMapTexture must have 6 face images.");
+    }
+
+    const vertexBuffer = this.device.createBuffer({
+      label: "Environment Render Vertex Buffer",
+      size: vertexPositionBufferData.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(vertexBuffer, 0, vertexPositionBufferData);
+
+    const vertexBufferLayout: GPUVertexBufferLayout = {
+      arrayStride: vertexByteSize,
+      attributes: [
+        {
+          // Position
+          format: "float32x3" as const,
+          offset: 0,
+          shaderLocation: 0,
+        },
+      ],
+    };
+
+    const indexBuffer = this.device.createBuffer({
+      label: "Environment Render Index Buffer",
+      size: indexBufferData.byteLength,
+      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(indexBuffer, 0, indexBufferData);
+
+    const envViewTransformMatrixData = camera
+      .getEnvViewTransformMatrix()
+      .getRenderingData();
+    const projTransformMatrixData = camera
+      .getProjTransformMatrix()
+      .getRenderingData();
+
+    const envViewTransformBuffer = this.device.createBuffer({
+      label: "Environment View Transform Buffer",
+      size: envViewTransformMatrixData.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(
+      envViewTransformBuffer,
+      0,
+      envViewTransformMatrixData
+    );
+
+    const projTransformBuffer = this.device.createBuffer({
+      label: "Projection Transform Buffer",
+      size: projTransformMatrixData.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(
+      projTransformBuffer,
+      0,
+      projTransformMatrixData
+    );
+
+    const texture = this.device.createTexture({
+      size: [faceImageBitmaps[0].width, faceImageBitmaps[0].height, 6],
+      format: "rgba8unorm",
+      usage:
+        GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.COPY_DST |
+        GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+    faceImageBitmaps.forEach((imageBitmap, index) => {
+      this.device.queue.copyExternalImageToTexture(
+        { source: imageBitmap },
+        { texture, origin: { x: 0, y: 0, z: index } },
+        [imageBitmap.width, imageBitmap.height, 1]
+      );
+    });
+
+    const sampler = this.device.createSampler({
+      magFilter: "linear",
+      minFilter: "linear",
+    });
+
+    const vertexShaderModule = this.device.createShaderModule({
+      label: "Environment Render Vertex Shader",
+      code: EnvRenderVertexShader,
+    });
+
+    const fragmentShaderModule = this.device.createShaderModule({
+      label: "Environment Render Fragment Shader",
+      code: EnvRenderFragmentShader,
+    });
+
+    const bindGroupLayout: GPUBindGroupLayout =
+      this.device.createBindGroupLayout({
+        label: "Environment Render Bind Group Layout",
+        entries: [
+          {
+            // Env View Transformation Matrix
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
+          {
+            // Projection Transformation Matrix
+            binding: 1,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
+          {
+            // Sampler
+            binding: 2,
+            visibility: GPUShaderStage.FRAGMENT,
+            sampler: {},
+          },
+          {
+            // Texture
+            binding: 3,
+            visibility: GPUShaderStage.FRAGMENT,
+            texture: {
+              sampleType: "float" as const,
+              viewDimension: "cube" as const,
+              multisampled: false,
+            },
+          },
+        ],
+      });
+
+    const pipelineLayout = this.device.createPipelineLayout({
+      label: "Environment Render Pipeline Layout",
+      bindGroupLayouts: [bindGroupLayout],
+    });
+
+    const pipeline = this.device.createRenderPipeline({
+      layout: pipelineLayout,
+      label: "Environment Render Pipeline",
+      vertex: {
+        module: vertexShaderModule,
+        buffers: [vertexBufferLayout],
+      },
+      fragment: {
+        module: fragmentShaderModule,
+
+        targets: [
+          {
+            format: this.canvasFormat,
+          },
+        ],
+      },
+      primitive: {
+        topology: "triangle-list",
+        // cullMode: "back",
+      },
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: "less",
+        format: "depth24plus",
+      },
+    });
+
+    const bindGroup = this.device.createBindGroup({
+      layout: bindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: envViewTransformBuffer },
+        },
+        {
+          binding: 1,
+          resource: { buffer: projTransformBuffer },
+        },
+        {
+          binding: 2,
+          resource: sampler,
+        },
+        {
+          binding: 3,
+          resource: texture.createView({
+            dimension: "cube",
+          }),
+        },
+      ],
+    });
+
+    return { pipeline, bindGroup, vertexBuffer, indexBuffer, indexCount };
   }
 
   generateRenderItems(scene: SAM.Scene, camera: SAM.Camera): RenderItem[] {

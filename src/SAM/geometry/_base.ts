@@ -54,6 +54,20 @@ export class Geometry {
     return data;
   }
 
+  // TODO: revise it with getBufferData
+  getVertexPositionBufferData(): Float32Array {
+    const data = new Float32Array(3 * this.vertexes.length);
+
+    for (let i = 0; i < this.vertexes.length; i++) {
+      const vertex = this.vertexes[i];
+      data[i * 3] = vertex.position[0];
+      data[i * 3 + 1] = vertex.position[1];
+      data[i * 3 + 2] = vertex.position[2];
+    }
+
+    return data;
+  }
+
   getIndexBufferData(options?: GetIndexBufferDataOptions): Uint16Array {
     if (options?.isWireframe) {
       const indexBufferData = new Uint16Array(this.indexes.length * 2);
@@ -87,5 +101,9 @@ export class Geometry {
         ? this.indexes.length * 2
         : this.indexes.length,
     };
+  }
+
+  getIndexCount(): number {
+    return this.indexes.length;
   }
 }

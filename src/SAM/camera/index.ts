@@ -27,6 +27,22 @@ export class Camera {
     ]);
   }
 
+  getEnvViewTransformMatrix(): SAM.Matrix4 {
+    const eyeFromTarget = this.eye.sub(this.target);
+
+    const zAxis = eyeFromTarget.normalize();
+    const xAxis = this.up.cross(zAxis).normalize();
+    const yAxis = zAxis.cross(xAxis);
+
+    // prettier-ignore
+    return new SAM.Matrix4([
+      xAxis.getX(), xAxis.getY(), xAxis.getZ(), 0,
+      yAxis.getX(), yAxis.getY(), yAxis.getZ(), 0,
+      zAxis.getX(), zAxis.getY(), zAxis.getZ(), 0,
+      0, 0, 0, 1,
+    ]);
+  }
+
   getProjTransformMatrix(): SAM.Matrix4 {
     const newMatrix = new SAM.Matrix4();
     newMatrix.setIdentity();
