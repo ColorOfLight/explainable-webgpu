@@ -42,7 +42,7 @@ export class PhongMaterial extends Material {
     this.alpha = options?.alpha ?? 64;
   }
 
-  getUniformItems(): SAM.UniformItem[] {
+  getMaterialBindDatas(): SAM.MaterialBindData[] {
     return [
       {
         label: "color",

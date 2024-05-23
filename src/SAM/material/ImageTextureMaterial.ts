@@ -35,7 +35,7 @@ export class ImageTextureMaterial extends Material {
     this.samplerDescriptor = options?.samplerDescriptor ?? {};
   }
 
-  getUniformItems(): SAM.UniformItem[] {
+  getMaterialBindDatas(): SAM.MaterialBindData[] {
     return [
       {
         label: "sampler",

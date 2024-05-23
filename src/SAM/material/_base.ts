@@ -13,7 +13,7 @@ export class Material {
     this.isWireframe = options?.isWireframe ?? false;
   }
 
-  getUniformItems(): SAM.UniformItem[] {
+  getMaterialBindDatas(): SAM.MaterialBindData[] {
     return [];
   }
 }

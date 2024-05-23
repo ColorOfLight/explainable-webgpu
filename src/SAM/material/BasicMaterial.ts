@@ -25,7 +25,7 @@ export class BasicMaterial extends Material {
     };
   }
 
-  getUniformItems(): SAM.UniformItem[] {
+  getMaterialBindDatas(): SAM.MaterialBindData[] {
     return [
       {
         label: "color",

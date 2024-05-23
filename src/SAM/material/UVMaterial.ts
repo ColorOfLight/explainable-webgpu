@@ -30,7 +30,7 @@ export class UVMaterial extends Material {
     this.pattern = options?.pattern ?? "gradient";
   }
 
-  getUniformItems(): SAM.UniformItem[] {
+  getMaterialBindDatas(): SAM.MaterialBindData[] {
     return [
       {
         label: "pattern",

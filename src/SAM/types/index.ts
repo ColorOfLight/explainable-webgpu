@@ -1,4 +1,4 @@
-type UniformDataList = [
+type MaterialBindDataList = [
   {
     type: "typedArray";
     value: Float32Array | Int32Array | Uint32Array;
@@ -15,7 +15,7 @@ type UniformDataList = [
   },
 ];
 
-export interface UniformItem {
+export interface MaterialBindData {
   label: string;
-  data: UniformDataList[number];
+  data: MaterialBindDataList[number];
 }

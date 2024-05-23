@@ -480,7 +480,7 @@ export class WebGPURenderer {
     const { vertexData, indexData, indexCount } = mesh.geometry.getBufferData({
       isWireframe: mesh.material.isWireframe,
     });
-    const uniformItems = mesh.material.getUniformItems();
+    const materialBindDatas = mesh.material.getMaterialBindDatas();
     const topology = mesh.material.isWireframe ? "line-list" : "triangle-list";
     const vertexByteSize = mesh.geometry.getVertexByteSize();
 
@@ -505,21 +505,25 @@ export class WebGPURenderer {
     });
     this.device.queue.writeBuffer(modelTransformBuffer, 0, modelTransformData);
 
-    const materialResources = uniformItems.map((uniformItem) => {
-      if (uniformItem.data.type === "typedArray") {
+    const materialResources = materialBindDatas.map((materialBindData) => {
+      if (materialBindData.data.type === "typedArray") {
         const uniformBuffer = this.device.createBuffer({
-          label: uniformItem.label,
-          size: uniformItem.data.value.byteLength,
+          label: materialBindData.label,
+          size: materialBindData.data.value.byteLength,
           usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
-        this.device.queue.writeBuffer(uniformBuffer, 0, uniformItem.data.value);
+        this.device.queue.writeBuffer(
+          uniformBuffer,
+          0,
+          materialBindData.data.value
+        );
 
         return { buffer: uniformBuffer };
       }
 
-      if (uniformItem.data.type === "image") {
+      if (materialBindData.data.type === "image") {
         const texture = this.device.createTexture({
-          size: [uniformItem.data.width, uniformItem.data.height, 1],
+          size: [materialBindData.data.width, materialBindData.data.height, 1],
           format: "rgba8unorm",
           usage:
             GPUTextureUsage.TEXTURE_BINDING |
@@ -527,16 +531,18 @@ export class WebGPURenderer {
             GPUTextureUsage.RENDER_ATTACHMENT,
         });
         this.device.queue.copyExternalImageToTexture(
-          { source: uniformItem.data.value },
+          { source: materialBindData.data.value },
           { texture: texture },
-          [uniformItem.data.width, uniformItem.data.height]
+          [materialBindData.data.width, materialBindData.data.height]
         );
 
         return texture.createView();
       }
 
-      if (uniformItem.data.type === "sampler") {
-        const sampler = this.device.createSampler(uniformItem.data.descriptor);
+      if (materialBindData.data.type === "sampler") {
+        const sampler = this.device.createSampler(
+          materialBindData.data.descriptor
+        );
         return sampler;
       }
 
@@ -609,8 +615,8 @@ export class WebGPURenderer {
 
     const materialBindGroupLayout = this.device.createBindGroupLayout({
       label: "Material Bind Group Layout",
-      entries: uniformItems.map((uniformItem, index) => {
-        if (uniformItem.data.type === "typedArray") {
+      entries: materialBindDatas.map((materialBindData, index) => {
+        if (materialBindData.data.type === "typedArray") {
           return {
             binding: index,
             visibility: GPUShaderStage.FRAGMENT,
@@ -620,7 +626,7 @@ export class WebGPURenderer {
           };
         }
 
-        if (uniformItem.data.type === "image") {
+        if (materialBindData.data.type === "image") {
           return {
             binding: index,
             visibility: GPUShaderStage.FRAGMENT,
@@ -628,7 +634,7 @@ export class WebGPURenderer {
           };
         }
 
-        if (uniformItem.data.type === "sampler") {
+        if (materialBindData.data.type === "sampler") {
           return {
             binding: index,
             visibility: GPUShaderStage.FRAGMENT,

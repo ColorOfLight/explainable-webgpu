@@ -28,7 +28,7 @@ export class SimpleStandardMaterial extends Material {
     this.color = options?.color;
   }
 
-  getUniformItems(): SAM.UniformItem[] {
+  getMaterialBindDatas(): SAM.MaterialBindData[] {
     return [
       {
         label: "color",
