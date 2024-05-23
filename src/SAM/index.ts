@@ -13,3 +13,4 @@ export * from "./coordinate";
 export * from "./types";
 export * from "./light";
 export * from "./constants";
+export * from "./texture";
