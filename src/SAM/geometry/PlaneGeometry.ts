@@ -24,7 +24,7 @@ export class PlaneGeometry extends Geometry {
         this.vertexes[j * (widthSegments + 1) + i] = {
           position: [x, y, 0],
           normal: [0, 0, 1],
-          uv: [i / widthSegments, j / heightSegments],
+          texCoord: [i / widthSegments, j / heightSegments],
         };
       }
     }

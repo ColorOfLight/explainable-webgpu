@@ -43,7 +43,7 @@ export class SphereGeometry extends Geometry {
         const vertex = {
           position: positionVector.toNumberArray(),
           normal: positionVector.normalize().toNumberArray(),
-          uv: [(i + uOffset) / widthSegments, j / heightSegments] as [
+          texCoord: [(i + uOffset) / widthSegments, j / heightSegments] as [
             number,
             number,
           ],

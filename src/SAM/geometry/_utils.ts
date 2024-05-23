@@ -28,7 +28,7 @@ export function generateCubePlaneVertexes(
       vertexes[j * (widthSegments + 1) + i] = {
         position: positionVector.toNumberArray(),
         normal: front.toNumberArray(),
-        uv: [i / widthSegments, j / heightSegments],
+        texCoord: [i / widthSegments, j / heightSegments],
         color,
       };
     }

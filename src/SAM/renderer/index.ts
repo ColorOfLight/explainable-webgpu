@@ -532,7 +532,7 @@ export class WebGPURenderer {
           shaderLocation: 1,
         },
         {
-          // UV
+          // texCoord
           format: "float32x2" as const,
           offset: 4 * (3 + 3),
           shaderLocation: 2,

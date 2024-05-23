@@ -3,7 +3,7 @@ import * as SAM from "@site/src/SAM";
 export interface Vertex {
   position: [number, number, number]; // xyz
   normal: [number, number, number]; // xyz
-  uv: [number, number]; // uv
+  texCoord: [number, number]; // texCoord
   color?: SAM.Color;
 }
 
@@ -42,8 +42,8 @@ export class Geometry {
       data[i * vertexFloat32Size + 3] = vertex.normal[0];
       data[i * vertexFloat32Size + 4] = vertex.normal[1];
       data[i * vertexFloat32Size + 5] = vertex.normal[2];
-      data[i * vertexFloat32Size + 6] = vertex.uv[0];
-      data[i * vertexFloat32Size + 7] = vertex.uv[1];
+      data[i * vertexFloat32Size + 6] = vertex.texCoord[0];
+      data[i * vertexFloat32Size + 7] = vertex.texCoord[1];
       data[i * vertexFloat32Size + 8] = vertex.color ? vertex.color.data[0] : 0;
       data[i * vertexFloat32Size + 9] = vertex.color ? vertex.color.data[1] : 0;
       data[i * vertexFloat32Size + 10] = vertex.color

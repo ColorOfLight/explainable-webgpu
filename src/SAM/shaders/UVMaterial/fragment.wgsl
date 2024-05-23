@@ -1,10 +1,10 @@
 struct FragmentInput {
-  @location(0) uv: vec2f,
+  @location(0) texCoord: vec2f,
 };
 
-fn getCheckerBoardColor(uv: vec2f) -> vec3f {
-  let xStep = step(0.5, fract(uv.x * 5));
-  let yStep = step(0.5, fract(uv.y * 5));
+fn getCheckerBoardColor(texCoord: vec2f) -> vec3f {
+  let xStep = step(0.5, fract(texCoord.x * 5));
+  let yStep = step(0.5, fract(texCoord.y * 5));
 
   return select(vec3f(1), vec3f(0.5), xStep + yStep == 1);
 }
@@ -13,8 +13,8 @@ fn getCheckerBoardColor(uv: vec2f) -> vec3f {
 
 @fragment
 fn fragmentMain(input: FragmentInput) -> @location(0) vec4f {
-  let gradientColor = vec3f(input.uv, 0);
-  let checkerBoardColor = getCheckerBoardColor(input.uv);
+  let gradientColor = vec3f(input.texCoord, 0);
+  let checkerBoardColor = getCheckerBoardColor(input.texCoord);
 
   let isGradientInt = select(0.0, 1.0, pattern == 0);
   let isCheckerBoardInt = select(0.0, 1.0, pattern == 1);

@@ -10,19 +10,19 @@ export class SimpleTriangleGeometry extends Geometry {
         position: [size, size, 0],
         color: new SAM.Color([1, 0, 0]),
         normal: [0, 0, 1],
-        uv: [1, 1],
+        texCoord: [1, 1],
       },
       {
         position: [-size, -size, 0],
         color: new SAM.Color([0, 1, 0]),
         normal: [0, 0, 1],
-        uv: [0, 0],
+        texCoord: [0, 0],
       },
       {
         position: [size, -size, 0],
         color: new SAM.Color([0, 0, 1]),
         normal: [0, 0, 1],
-        uv: [1, 0],
+        texCoord: [1, 0],
       },
     ];
 
