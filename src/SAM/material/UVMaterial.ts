@@ -34,7 +34,10 @@ export class UVMaterial extends Material {
     return [
       {
         label: "pattern",
-        data: new Uint32Array([UV_MATERIAL_PATTERNS.indexOf(this.pattern)]),
+        data: {
+          type: "typedArray",
+          value: new Uint32Array([UV_MATERIAL_PATTERNS.indexOf(this.pattern)]),
+        },
       },
     ];
   }

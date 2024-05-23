@@ -46,19 +46,19 @@ export class PhongMaterial extends Material {
     return [
       {
         label: "color",
-        data: this.color.data,
+        data: { type: "typedArray", value: this.color.data },
       },
       {
         label: "diffuse",
-        data: new Float32Array([this.diffuse]),
+        data: { type: "typedArray", value: new Float32Array([this.diffuse]) },
       },
       {
         label: "specular",
-        data: new Float32Array([this.specular]),
+        data: { type: "typedArray", value: new Float32Array([this.specular]) },
       },
       {
         label: "alpha",
-        data: new Float32Array([this.alpha]),
+        data: { type: "typedArray", value: new Float32Array([this.alpha]) },
       },
     ];
   }

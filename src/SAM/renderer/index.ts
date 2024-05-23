@@ -505,15 +505,42 @@ export class WebGPURenderer {
     });
     this.device.queue.writeBuffer(modelTransformBuffer, 0, modelTransformData);
 
-    const materialBuffers = uniformItems.map((uniformItem) => {
-      const uniformBuffer = this.device.createBuffer({
-        label: uniformItem.label,
-        size: uniformItem.data.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      });
-      this.device.queue.writeBuffer(uniformBuffer, 0, uniformItem.data);
+    const materialResources = uniformItems.map((uniformItem) => {
+      if (uniformItem.data.type === "typedArray") {
+        const uniformBuffer = this.device.createBuffer({
+          label: uniformItem.label,
+          size: uniformItem.data.value.byteLength,
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        this.device.queue.writeBuffer(uniformBuffer, 0, uniformItem.data.value);
 
-      return uniformBuffer;
+        return { buffer: uniformBuffer };
+      }
+
+      if (uniformItem.data.type === "image") {
+        const texture = this.device.createTexture({
+          size: [uniformItem.data.width, uniformItem.data.height, 1],
+          format: "rgba8unorm",
+          usage:
+            GPUTextureUsage.TEXTURE_BINDING |
+            GPUTextureUsage.COPY_DST |
+            GPUTextureUsage.RENDER_ATTACHMENT,
+        });
+        this.device.queue.copyExternalImageToTexture(
+          { source: uniformItem.data.value },
+          { texture: texture },
+          [uniformItem.data.width, uniformItem.data.height]
+        );
+
+        return texture.createView();
+      }
+
+      if (uniformItem.data.type === "sampler") {
+        const sampler = this.device.createSampler(uniformItem.data.descriptor);
+        return sampler;
+      }
+
+      throw new Error("Unknown uniform type.");
     });
 
     const vertexBufferLayout: GPUVertexBufferLayout = {
@@ -582,22 +609,42 @@ export class WebGPURenderer {
 
     const materialBindGroupLayout = this.device.createBindGroupLayout({
       label: "Material Bind Group Layout",
-      entries: uniformItems.map((_, index) => ({
-        binding: index,
-        visibility: GPUShaderStage.FRAGMENT,
-        buffer: {
-          type: "uniform",
-        },
-      })),
+      entries: uniformItems.map((uniformItem, index) => {
+        if (uniformItem.data.type === "typedArray") {
+          return {
+            binding: index,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {
+              type: "uniform",
+            },
+          };
+        }
+
+        if (uniformItem.data.type === "image") {
+          return {
+            binding: index,
+            visibility: GPUShaderStage.FRAGMENT,
+            texture: {},
+          };
+        }
+
+        if (uniformItem.data.type === "sampler") {
+          return {
+            binding: index,
+            visibility: GPUShaderStage.FRAGMENT,
+            sampler: {},
+          };
+        }
+
+        throw new Error("Unknown uniform type.");
+      }),
     });
 
     const materialBindGroup = this.device.createBindGroup({
       layout: materialBindGroupLayout,
-      entries: materialBuffers.map((buffer, index) => ({
+      entries: materialResources.map((resource, index) => ({
         binding: index,
-        resource: {
-          buffer,
-        },
+        resource,
       })),
     });
 

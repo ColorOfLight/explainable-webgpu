@@ -29,7 +29,7 @@ export class BasicMaterial extends Material {
     return [
       {
         label: "color",
-        data: this.color.data,
+        data: { type: "typedArray", value: this.color.data },
       },
     ];
   }
