@@ -2,7 +2,7 @@ export class Texture {
   width: number;
   height: number;
   isLoaded: boolean;
-  data: ImageBitmap;
+  data: ImageBitmap | ImageBitmap[];
 
   constructor() {
     this.width = 0;
