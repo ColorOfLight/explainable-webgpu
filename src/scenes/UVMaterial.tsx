@@ -54,7 +54,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   });
 };
 
-const TextureScene = () => {
+const UVMaterialScene = () => {
   const canvasRef = useRef<HTMLCanvasElement>();
 
   useEffect(() => {
@@ -64,4 +64,4 @@ const TextureScene = () => {
   return <canvas width="500" height="500" ref={canvasRef} />;
 };
 
-export default TextureScene;
+export default UVMaterialScene;
