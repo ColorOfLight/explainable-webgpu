@@ -5,9 +5,19 @@ export interface LightSet {
   directionals: SAM.DirectionalLight[];
   points: SAM.PointLight[];
 }
+
+export interface SceneEnvironment {
+  cubeMapTexture: SAM.CubeMapTexture;
+  vertexPositionBufferData: Float32Array;
+  indexBufferData: Uint16Array;
+  indexCount: number;
+  vertexByteSize: number;
+}
+
 export class Scene {
   meshes: SAM.Mesh[];
   lightSet: LightSet;
+  environment: SceneEnvironment | undefined;
 
   constructor() {
     this.meshes = [];
@@ -16,6 +26,7 @@ export class Scene {
       directionals: [],
       points: [],
     };
+    this.environment = undefined;
   }
 
   add(object: unknown) {
@@ -60,5 +71,21 @@ export class Scene {
     }
 
     throw new Error("Unsupported object type");
+  }
+
+  setEnvironment(cubeMapTexture: SAM.CubeMapTexture): void {
+    const cubeGeometry = new SAM.CubeGeometry(2, 2, 2);
+
+    this.environment = {
+      cubeMapTexture,
+      vertexPositionBufferData: cubeGeometry.getVertexPositionBufferData(),
+      indexBufferData: cubeGeometry.getIndexBufferData(),
+      vertexByteSize: 3 * 4,
+      indexCount: cubeGeometry.getIndexCount(),
+    };
+  }
+
+  getEnvironment(): SceneEnvironment | undefined {
+    return this.environment;
   }
 }
