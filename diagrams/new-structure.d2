@@ -1,0 +1,95 @@
+direction: down
+classes
+
+# Application Nodes
+Nodes: {
+  Geometry
+  Material
+  Mesh
+  Camera
+  Light
+}
+
+# NodeElements
+NodeElements: {
+  GeometryElement: {
+    VertexBuffer
+    IndexBuffer
+    IndexCount
+    VertexBufferLayout
+    Topology
+  }
+  MaterialElement: {
+    MaterialBuffers
+    MaterialBindGroup
+    ShaderModule
+    MaterialBindGroupLayout
+    Culling
+
+    MaterialBuffers -> MaterialBindGroup
+  }
+  MeshElement: {
+    MeshBuffers
+    MeshBindGroup
+    MeshBindGroupLayout
+
+    MeshBuffers -> MeshBindGroup
+  }
+  CameraElement: {
+    CameraBuffers
+    CameraBindGroupLayout
+    CameraBindGroup
+
+    CameraBuffers -> CameraBindGroup
+  }
+  LightElement: {
+    LightBuffers
+    LightBindGroup
+    LightBindGroupLayout
+
+    LightBuffers -> LightBindGroup
+  }
+}
+
+PipelineElement: {
+  PipelinePrimitive
+  RenderPipelineLayout
+  RenderPipeline
+
+  PipelinePrimitive -> RenderPipeline
+  RenderPipelineLayout -> RenderPipeline
+}
+
+RenderSequence
+
+# Relations
+
+Nodes.Geometry -> NodeElements.GeometryElement
+Nodes.Material -> NodeElements.MaterialElement
+Nodes.Mesh -> Nodes.Geometry
+Nodes.Mesh -> Nodes.Material
+Nodes.Mesh -> NodeElements.MeshElement
+Nodes.Camera -> NodeElements.CameraElement
+Nodes.Light -> NodeElements.LightElement
+
+NodeElements.GeometryElement.VertexBuffer -> RenderSequence
+NodeElements.GeometryElement.IndexBuffer -> RenderSequence
+NodeElements.GeometryElement.IndexCount -> RenderSequence
+NodeElements.GeometryElement.VertexBufferLayout -> PipelineElement.RenderPipelineLayout
+NodeElements.GeometryElement.Topology -> PipelineElement.PipelinePrimitive
+
+NodeElements.MaterialElement.ShaderModule -> PipelineElement.RenderPipeline
+NodeElements.MaterialElement.MaterialBindGroupLayout -> PipelineElement.RenderPipelineLayout
+NodeElements.MaterialElement.Culling -> PipelineElement.PipelinePrimitive
+NodeElements.MaterialElement.MaterialBindGroup -> RenderSequence
+
+NodeElements.MeshElement.MeshBindGroupLayout -> PipelineElement.RenderPipelineLayout
+NodeElements.MeshElement.MeshBindGroup -> RenderSequence
+
+NodeElements.CameraElement.CameraBindGroupLayout -> PipelineElement.RenderPipelineLayout
+NodeElements.CameraElement.CameraBindGroup -> RenderSequence
+
+NodeElements.LightElement.LightBindGroupLayout -> PipelineElement.RenderPipelineLayout
+NodeElements.LightElement.LightBindGroup -> RenderSequence
+
+PipelineElement.RenderPipeline -> RenderSequence
