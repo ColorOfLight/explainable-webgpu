@@ -24,7 +24,8 @@ export class PipelineElement extends SceneElement {
   constructor(
     device: GPUDevice,
     canvasFormat: GPUTextureFormat,
-    meshElement: SAM.MeshElement
+    meshElement: SAM.MeshElement,
+    cameraElement: SAM.CameraElement
   ) {
     super(device);
 
@@ -32,6 +33,7 @@ export class PipelineElement extends SceneElement {
       bindGroupLayouts: [
         meshElement.bindGroupLayout,
         meshElement.materialElement.bindGroupLayout,
+        cameraElement.bindGroupLayout,
       ],
     });
 

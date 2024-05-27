@@ -5,6 +5,7 @@ export class RenderSequence {
 
   constructor(
     meshElement: SAM.MeshElement,
+    cameraElement: SAM.CameraElement,
     pipelineElement: SAM.PipelineElement
   ) {
     const vertexBuffer = meshElement.geometryElement.vertexBuffer;
@@ -12,6 +13,7 @@ export class RenderSequence {
     const indexCount = meshElement.geometryElement.indexCount;
     const meshBindGroup = meshElement.bindGroup;
     const materialBindGroup = meshElement.materialElement.bindGroup;
+    const cameraBindGroup = cameraElement.bindGroup;
     const pipeline = pipelineElement.pipeline;
 
     this.runSequence = (passEncoder: GPURenderPassEncoder) => {
@@ -20,6 +22,7 @@ export class RenderSequence {
       passEncoder.setIndexBuffer(indexBuffer, "uint16");
       passEncoder.setBindGroup(0, meshBindGroup);
       passEncoder.setBindGroup(1, materialBindGroup);
+      passEncoder.setBindGroup(2, cameraBindGroup);
       passEncoder.drawIndexed(indexCount, 1, 0, 0, 0);
     };
   }

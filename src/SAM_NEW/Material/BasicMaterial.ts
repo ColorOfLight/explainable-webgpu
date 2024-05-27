@@ -24,13 +24,4 @@ export class BasicMaterial extends Material {
       label: "Basic Material Fragment Shader Module",
     };
   }
-
-  getBindDataList(): SAM.BindData[] {
-    return [
-      {
-        label: "color",
-        data: { type: "numberArray", value: this.color.toNumberArray() },
-      },
-    ];
-  }
 }

@@ -7,8 +7,4 @@ export class Material extends SAM.Node {
   constructor(label?: string) {
     super(label ?? "Material");
   }
-
-  getBindDataList(): SAM.BindData[] {
-    throw new Error("Method not implemented.");
-  }
 }

@@ -14,9 +14,10 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const mesh = new SAM.Mesh(geometry, material);
 
-  // const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
-  // camera.eye = new SAM.Vector3([0, 0, 1]);
+  const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
+  camera.eye = new SAM.Vector3(0, 0, 1);
 
+  sceneManager.add(camera);
   sceneManager.add(mesh);
 
   renderer.render(sceneManager);

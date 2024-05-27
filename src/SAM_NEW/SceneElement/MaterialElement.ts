@@ -13,7 +13,7 @@ export class MaterialElement extends NodeElement {
   constructor(device: GPUDevice, material: SAM.Material) {
     super(device, material);
 
-    const bindDataList = material.getBindDataList();
+    const bindDataList = this.getBindDataList(material);
 
     this.buffers = bindDataList.map((item) => {
       if (item.data.type === "numberArray") {
@@ -64,5 +64,18 @@ export class MaterialElement extends NodeElement {
     });
 
     this.cullMode = "none";
+  }
+
+  getBindDataList(material: SAM.Material): SAM.BindData[] {
+    if (material instanceof SAM.BasicMaterial) {
+      return [
+        {
+          label: "color",
+          data: { type: "numberArray", value: material.color.toNumberArray() },
+        },
+      ];
+    }
+
+    throw new Error("Unsupported material type");
   }
 }
