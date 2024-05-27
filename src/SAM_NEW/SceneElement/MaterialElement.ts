@@ -15,45 +15,14 @@ export class MaterialElement extends NodeElement {
 
     const bindDataList = this.getBindDataList(material);
 
-    this.buffers = bindDataList.map((item) => {
-      if (item.data.type === "numberArray") {
-        const bufferData = new Float32Array(item.data.value);
-        const buffer = device.createBuffer({
-          size: bufferData.byteLength,
-          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-        this.device.queue.writeBuffer(buffer, 0, bufferData);
+    this.buffers = bindDataList.map(this.initBuffer.bind(this));
+    const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
+      bindDataList,
+      this.buffers
+    );
 
-        return buffer;
-      }
-
-      throw new Error("Unsupported bind data type");
-    });
-
-    this.bindGroupLayout = device.createBindGroupLayout({
-      entries: bindDataList.map((_, index) => {
-        return {
-          label: `Material ${index}`,
-          binding: index,
-          visibility: GPUShaderStage.FRAGMENT,
-          buffer: {
-            type: "uniform",
-          },
-        };
-      }),
-    });
-
-    this.bindGroup = device.createBindGroup({
-      layout: this.bindGroupLayout,
-      entries: bindDataList.map((_, index) => {
-        return {
-          binding: index,
-          resource: {
-            buffer: this.buffers[index],
-          },
-        };
-      }),
-    });
+    this.bindGroup = bindGroup;
+    this.bindGroupLayout = bindGroupLayout;
 
     this.vertexShaderModule = device.createShaderModule({
       code: material.vertexDescriptor.code,
@@ -71,7 +40,8 @@ export class MaterialElement extends NodeElement {
       return [
         {
           label: "color",
-          data: { type: "numberArray", value: material.color.toNumberArray() },
+          data: { type: "float32Array", value: material.color.toNumberArray() },
+          visibility: GPUShaderStage.FRAGMENT,
         },
       ];
     }

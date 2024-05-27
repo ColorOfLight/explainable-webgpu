@@ -26,7 +26,7 @@ export interface RawValueObservable<U extends () => Record<string, unknown>>
 
 type BindDataList = [
   {
-    type: "numberArray";
+    type: "float32Array";
     value: number[];
   },
   {
@@ -44,4 +44,5 @@ type BindDataList = [
 export interface BindData {
   label: string;
   data: BindDataList[number];
+  visibility: GPUShaderStageFlags;
 }
