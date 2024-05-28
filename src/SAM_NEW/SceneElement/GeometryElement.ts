@@ -2,7 +2,7 @@ import * as SAM from "@site/src/SAM_NEW";
 
 import { NodeElement } from "./_base";
 
-export class GeometryElement extends NodeElement {
+export class GeometryElement extends NodeElement<SAM.Geometry> {
   vertexBuffer: GPUBuffer;
   indexBuffer: GPUBuffer;
   indexCount: number;

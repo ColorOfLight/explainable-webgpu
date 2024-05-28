@@ -2,7 +2,7 @@ import * as SAM from "@site/src/SAM_NEW";
 
 import { NodeElement } from "./_base";
 
-export class MeshElement extends NodeElement {
+export class MeshElement extends NodeElement<SAM.Mesh> {
   geometryElement: SAM.GeometryElement;
   materialElement: SAM.MaterialElement;
   buffers: GPUBuffer[];
@@ -27,13 +27,14 @@ export class MeshElement extends NodeElement {
     this.bindGroupLayout = bindGroupLayout;
   }
 
-  getBindDataList(mesh: SAM.Mesh): SAM.BindData[] {
+  getBindDataList(mesh: SAM.Mesh): SAM.BindData<SAM.Mesh>[] {
     return [
       {
         label: "transformMatrix",
         data: {
           type: "float32Array",
-          value: mesh.transformMatrix.toRenderingData(),
+          getValue: () =>
+            new Float32Array(mesh.transformMatrix.toRenderingData()),
         },
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
       },

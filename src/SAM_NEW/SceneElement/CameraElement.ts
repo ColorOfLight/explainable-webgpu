@@ -2,7 +2,7 @@ import * as SAM from "@site/src/SAM_NEW";
 
 import { NodeElement } from "./_base";
 
-export class CameraElement extends NodeElement {
+export class CameraElement extends NodeElement<SAM.Camera> {
   buffers: GPUBuffer[];
   bindGroup: GPUBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
@@ -22,22 +22,25 @@ export class CameraElement extends NodeElement {
     this.bindGroupLayout = bindGroupLayout;
   }
 
-  getBindDataList(camera: SAM.Camera): SAM.BindData[] {
+  getBindDataList(camera: SAM.Camera): SAM.BindData<SAM.Camera>[] {
     return [
       {
         label: "viewTransform",
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         data: {
           type: "float32Array",
-          value: camera.getViewTransformMatrix().toRenderingData(),
+          getValue: () =>
+            new Float32Array(camera.getViewTransformMatrix().toRenderingData()),
         },
+        watchKeys: ["eye", "target", "up"],
       },
       {
         label: "projTransform",
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         data: {
           type: "float32Array",
-          value: camera.getProjTransformMatrix().toRenderingData(),
+          getValue: () =>
+            new Float32Array(camera.getProjTransformMatrix().toRenderingData()),
         },
       },
       {
@@ -45,7 +48,8 @@ export class CameraElement extends NodeElement {
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         data: {
           type: "float32Array",
-          value: camera.getEyeVector().toNumberArray(),
+          getValue: () =>
+            new Float32Array(camera.getEyeVector().toNumberArray()),
         },
       },
     ];

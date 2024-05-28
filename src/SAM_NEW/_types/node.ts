@@ -27,22 +27,25 @@ export interface RawValueObservable<U extends () => Record<string, unknown>>
 type BindDataList = [
   {
     type: "float32Array";
-    value: number[];
+    getValue: () => Float32Array;
   },
-  {
-    type: "sampler";
-    descriptor: GPUSamplerDescriptor;
-  },
-  {
-    type: "image";
-    value: ImageBitmap;
-    width: number;
-    height: number;
-  },
+
+  // TODO: Implement these types
+  // {
+  //   type: "sampler";
+  //   descriptor: GPUSamplerDescriptor;
+  // },
+  // {
+  //   type: "image";
+  //   value: ImageBitmap;
+  //   width: number;
+  //   height: number;
+  // },
 ];
 
-export interface BindData {
+export interface BindData<N extends SAM.Node> {
   label: string;
   data: BindDataList[number];
   visibility: GPUShaderStageFlags;
+  watchKeys?: (keyof N)[];
 }

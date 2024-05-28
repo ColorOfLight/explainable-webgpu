@@ -8,18 +8,20 @@ export class SceneElement {
   }
 }
 
-export class NodeElement extends SceneElement {
+export class NodeElement<N extends SAM.Node> extends SceneElement {
   nodeId: Symbol;
+  mediator: SAM.Mediator<N>;
 
-  constructor(device: GPUDevice, node: SAM.Node) {
+  constructor(device: GPUDevice, node: N) {
     super(device);
 
     this.nodeId = node.getId();
+    this.mediator = new SAM.Mediator(node);
   }
 
-  protected initBuffer(bindData: SAM.BindData) {
+  protected initBuffer(bindData: SAM.BindData<N>) {
     if (bindData.data.type === "float32Array") {
-      const typedData = new Float32Array(bindData.data.value);
+      const typedData = bindData.data.getValue();
 
       const buffer = this.device.createBuffer({
         label: bindData.label,
@@ -29,6 +31,22 @@ export class NodeElement extends SceneElement {
 
       this.device.queue.writeBuffer(buffer, 0, typedData);
 
+      const watchKeys = bindData.watchKeys as (keyof N)[];
+      if (watchKeys) {
+        const getValue = bindData.data.getValue;
+        const watchItems = watchKeys.map((key) => {
+          return {
+            key,
+            onChange: () => {
+              const newData = getValue();
+              this.device.queue.writeBuffer(buffer, 0, newData);
+            },
+          };
+        });
+
+        this.mediator.watchAll(watchItems);
+      }
+
       return buffer;
     }
 
@@ -36,7 +54,7 @@ export class NodeElement extends SceneElement {
   }
 
   protected generateBindGroupSet(
-    bindDataList: SAM.BindData[],
+    bindDataList: SAM.BindData<N>[],
     buffers: GPUBuffer[]
   ): [GPUBindGroupLayout, GPUBindGroup] {
     const bindGroupLayout = this.device.createBindGroupLayout({

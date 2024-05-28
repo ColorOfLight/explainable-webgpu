@@ -2,7 +2,7 @@ import * as SAM from "@site/src/SAM_NEW";
 
 import { NodeElement } from "./_base";
 
-export class MaterialElement extends NodeElement {
+export class MaterialElement extends NodeElement<SAM.Material> {
   buffers: GPUBuffer[];
   bindGroup: GPUBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
@@ -35,12 +35,15 @@ export class MaterialElement extends NodeElement {
     this.cullMode = "none";
   }
 
-  getBindDataList(material: SAM.Material): SAM.BindData[] {
+  getBindDataList(material: SAM.Material): SAM.BindData<SAM.Material>[] {
     if (material instanceof SAM.BasicMaterial) {
       return [
         {
           label: "color",
-          data: { type: "float32Array", value: material.color.toNumberArray() },
+          data: {
+            type: "float32Array",
+            getValue: () => material.color.toTypedArray(),
+          },
           visibility: GPUShaderStage.FRAGMENT,
         },
       ];

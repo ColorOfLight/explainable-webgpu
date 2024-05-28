@@ -3,54 +3,64 @@ export interface MediatorWatchItem<T> {
   onChange: () => void;
 }
 
-export class Mediator {
-  private targetObject: object | undefined;
-  private originalDescriptors: Record<string, PropertyDescriptor>;
+export class Mediator<O extends object> {
+  private targetObject: O | undefined;
+  private watchers: Map<keyof O, { originalDescriptor: PropertyDescriptor }>;
 
-  constructor() {
-    this.targetObject = {};
-    this.originalDescriptors = {};
+  constructor(object: O) {
+    this.targetObject = object;
+    this.watchers = new Map();
   }
 
-  watch<T extends object>(object: T, watchItems: MediatorWatchItem<keyof T>[]) {
-    if (this.targetObject != null) {
-      this.unwatch();
-    }
+  watch(watchItem: MediatorWatchItem<keyof O>) {
+    if (this.watchers.get(watchItem.key) != null) {
+      const prevDescriptor = Object.getOwnPropertyDescriptor(
+        this.targetObject,
+        watchItem.key
+      );
 
-    const _values = watchItems.reduce(
-      (acc, { key }) => {
-        acc[key] = object[key];
-        return acc;
-      },
-      {} as Record<keyof T, T[keyof T]>
-    );
-
-    const originalDescriptors = Object.getOwnPropertyDescriptors(object);
-
-    watchItems.forEach(({ key, onChange }) => {
-      Object.defineProperty(object, key, {
-        get: () => _values[key],
+      Object.defineProperty(this.targetObject, watchItem.key, {
+        get: () => prevDescriptor.get,
         set: (value) => {
-          _values[key] = value;
-          onChange();
+          prevDescriptor.set(value);
+          watchItem.onChange();
         },
       });
-    });
 
-    this.targetObject = object;
-    this.originalDescriptors = originalDescriptors;
-  }
-
-  unwatch() {
-    if (this.targetObject == null) {
-      throw new Error("No object is being watched");
+      return;
     }
 
-    const { targetObject, originalDescriptors } = this;
+    let _value = this.targetObject[watchItem.key];
 
-    Object.defineProperties(targetObject, originalDescriptors);
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      this.targetObject,
+      watchItem.key
+    );
 
-    this.targetObject = undefined;
-    this.originalDescriptors = {};
+    Object.defineProperty(this.targetObject, watchItem.key, {
+      get: () => _value,
+      set: (value) => {
+        _value = value;
+        watchItem.onChange();
+      },
+    });
+
+    this.watchers.set(watchItem.key, { originalDescriptor });
+  }
+
+  watchAll(watchItems: MediatorWatchItem<keyof O>[]) {
+    watchItems.forEach((watchItem) => this.watch(watchItem));
+  }
+
+  unwatch(key: keyof O) {
+    const { originalDescriptor } = this.watchers.get(key);
+
+    Object.defineProperty(this.targetObject, key, originalDescriptor);
+
+    this.watchers.delete(key);
+  }
+
+  unwatchAll() {
+    this.watchers.forEach((_, key) => this.unwatch(key));
   }
 }
