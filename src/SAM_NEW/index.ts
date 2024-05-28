@@ -13,3 +13,4 @@ export * from "./Object3D";
 export * from "./Material";
 export * from "./RenderSequence";
 export * from "./Camera";
+export * from "./Mediator";
