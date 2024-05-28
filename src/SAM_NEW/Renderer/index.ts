@@ -8,7 +8,6 @@ export class WebGPURenderer {
   context: GPUCanvasContext;
   canvasFormat: GPUTextureFormat;
   renderPassDescriptor: GPURenderPassDescriptor;
-  encoderDraw: GPUCommandEncoder;
 
   constructor(canvas: HTMLCanvasElement) {
     if (navigator.gpu == null) {
@@ -70,10 +69,6 @@ export class WebGPURenderer {
       },
     };
 
-    this.encoderDraw = this.device.createCommandEncoder({
-      label: "draw-encoder",
-    });
-
     this.status = "ready";
   }
 
@@ -103,7 +98,10 @@ export class WebGPURenderer {
     this.renderPassDescriptor.depthStencilAttachment.view =
       depthTexture.createView();
 
-    const pass = this.encoderDraw.beginRenderPass(this.renderPassDescriptor);
+    const encoderDraw = this.device.createCommandEncoder({
+      label: "draw-encoder",
+    });
+    const pass = encoderDraw.beginRenderPass(this.renderPassDescriptor);
 
     sceneManager.renderSequences.forEach((renderSequence) => {
       renderSequence.runSequence(pass);
@@ -111,7 +109,7 @@ export class WebGPURenderer {
 
     pass.end();
 
-    const commandBuffer = this.encoderDraw.finish();
+    const commandBuffer = encoderDraw.finish();
     this.device.queue.submit([commandBuffer]);
   }
 
