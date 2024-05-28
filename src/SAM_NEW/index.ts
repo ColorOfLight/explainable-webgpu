@@ -1,16 +1,28 @@
+// Base
 export * from "./_types";
 export * from "./_utils";
 
-export * from "./Renderer";
-export * from "./SceneManager";
-export * from "./Node";
+// Basic Classes
 export * from "./Color";
-export * from "./Geometry";
 export * from "./Vector";
-export * from "./SceneElement";
 export * from "./Matrix";
+export * from "./Mediator";
+export * from "./Coordinate";
+
+// Controls
+export * from "./Control";
+
+// Nodes
+export * from "./Node";
+export * from "./Geometry";
 export * from "./Object3D";
 export * from "./Material";
-export * from "./RenderSequence";
 export * from "./Camera";
-export * from "./Mediator";
+
+// Elements
+export * from "./SceneElement";
+
+// Render
+export * from "./Renderer";
+export * from "./SceneManager";
+export * from "./RenderSequence";
