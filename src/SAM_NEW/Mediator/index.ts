@@ -20,7 +20,7 @@ export class Mediator<O extends object> {
       );
 
       Object.defineProperty(this.targetObject, watchItem.key, {
-        get: () => prevDescriptor.get,
+        get: () => prevDescriptor.get(),
         set: (value) => {
           prevDescriptor.set(value);
           watchItem.onChange();
