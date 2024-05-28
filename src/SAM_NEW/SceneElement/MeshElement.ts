@@ -12,49 +12,31 @@ export class MeshElement extends NodeElement {
   constructor(device: GPUDevice, mesh: SAM.Mesh) {
     super(device, mesh);
 
-    const bindDataList = mesh.getBindDataList();
+    const bindDataList = this.getBindDataList(mesh);
 
     this.geometryElement = new SAM.GeometryElement(device, mesh.geometry);
     this.materialElement = new SAM.MaterialElement(device, mesh.material);
 
-    this.buffers = bindDataList.map((item) => {
-      if (item.data.type === "numberArray") {
-        const bufferData = new Float32Array(item.data.value);
-        const buffer = device.createBuffer({
-          size: bufferData.byteLength,
-          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-        this.device.queue.writeBuffer(buffer, 0, bufferData);
+    this.buffers = bindDataList.map(this.initBuffer.bind(this));
+    const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
+      bindDataList,
+      this.buffers
+    );
 
-        return buffer;
-      }
+    this.bindGroup = bindGroup;
+    this.bindGroupLayout = bindGroupLayout;
+  }
 
-      throw new Error("Unsupported bind data type");
-    });
-
-    this.bindGroupLayout = device.createBindGroupLayout({
-      entries: bindDataList.map((_, index) => {
-        return {
-          label: `Mesh ${index}`,
-          binding: index,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: {
-            type: "uniform",
-          },
-        };
-      }),
-    });
-
-    this.bindGroup = device.createBindGroup({
-      layout: this.bindGroupLayout,
-      entries: bindDataList.map((_, index) => {
-        return {
-          binding: index,
-          resource: {
-            buffer: this.buffers[index],
-          },
-        };
-      }),
-    });
+  getBindDataList(mesh: SAM.Mesh): SAM.BindData[] {
+    return [
+      {
+        label: "transformMatrix",
+        data: {
+          type: "float32Array",
+          value: mesh.transformMatrix.toRenderingData(),
+        },
+        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      },
+    ];
   }
 }

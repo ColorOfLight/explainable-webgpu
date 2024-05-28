@@ -10,18 +10,6 @@ export class Object3D extends SAM.Node {
     this.transformMatrix.setIdentity();
   }
 
-  getBindDataList(): SAM.BindData[] {
-    return [
-      {
-        label: "transformMatrix",
-        data: {
-          type: "numberArray",
-          value: this.transformMatrix.toRenderingData(),
-        },
-      },
-    ];
-  }
-
   setTranslate(vector: SAM.Vector3): void {
     this.transformMatrix.setTranslate(vector);
   }
