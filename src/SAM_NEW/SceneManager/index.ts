@@ -9,8 +9,6 @@ export class SceneManager {
     materialElements: Map<Symbol, SAM.MaterialElement>;
     cameraElements: Map<Symbol, SAM.CameraElement>;
   };
-  pipelineElements: SAM.PipelineElement[];
-  renderSequences: SAM.RenderSequence[];
 
   constructor(device: GPUDevice, canvasFormat: GPUTextureFormat) {
     this.device = device;
@@ -21,8 +19,6 @@ export class SceneManager {
       geometryElements: new Map(),
       materialElements: new Map(),
     };
-    this.pipelineElements = [];
-    this.renderSequences = [];
   }
 
   add(node: SAM.Node) {
@@ -68,24 +64,6 @@ export class SceneManager {
         meshElement = this.nodeElements.meshElements.get(node.getId());
       }
 
-      const cameraElement = this.nodeElements.cameraElements.values().next()
-        .value as SAM.CameraElement;
-
-      const pipelineElement = new SAM.PipelineElement(
-        this.device,
-        this.canvasFormat,
-        meshElement,
-        cameraElement
-      );
-      const renderSequence = new SAM.RenderSequence(
-        meshElement,
-        cameraElement,
-        pipelineElement
-      );
-
-      this.pipelineElements.push(pipelineElement);
-      this.renderSequences.push(renderSequence);
-
       return;
     }
 
@@ -99,5 +77,34 @@ export class SceneManager {
     }
 
     throw new Error("Unsupported node type");
+  }
+
+  generateRenderSequences(camera: SAM.Camera): SAM.RenderSequence[] {
+    const cameraElement = this.nodeElements.cameraElements.get(camera.getId());
+
+    if (cameraElement === undefined) {
+      throw new Error("Camera not found in the scene");
+    }
+
+    const meshElements = Array.from(this.nodeElements.meshElements.values());
+
+    const renderSequences: SAM.RenderSequence[] = meshElements.map(
+      (meshElement) => {
+        const pipelineElement = new SAM.PipelineElement(
+          this.device,
+          this.canvasFormat,
+          meshElement,
+          cameraElement
+        );
+
+        return new SAM.RenderSequence(
+          meshElement,
+          cameraElement,
+          pipelineElement
+        );
+      }
+    );
+
+    return renderSequences;
   }
 }

@@ -76,7 +76,7 @@ export class WebGPURenderer {
     return new SAM.SceneManager(this.device, this.canvasFormat);
   }
 
-  render(sceneManager: SAM.SceneManager): void {
+  render(sceneManager: SAM.SceneManager, camera: SAM.Camera): void {
     if (this.status !== "ready") {
       throw new Error(
         `Renderer is not ready for rendering. Current status is: ${this.status}`
@@ -103,7 +103,9 @@ export class WebGPURenderer {
     });
     const pass = encoderDraw.beginRenderPass(this.renderPassDescriptor);
 
-    sceneManager.renderSequences.forEach((renderSequence) => {
+    const renderSequences = sceneManager.generateRenderSequences(camera);
+
+    renderSequences.forEach((renderSequence) => {
       renderSequence.runSequence(pass);
     });
 
