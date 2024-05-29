@@ -1,5 +1,14 @@
 import * as SAM from "@site/src/SAM_NEW";
 
+const BIND_DATA_BUFFER_USAGE: Record<
+  SAM.BindData<SAM.Node>["data"]["type"],
+  GPUFlagsConstant
+> = {
+  float32Array: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  vertex: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  index: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+};
+
 export class SceneElement extends SAM.Observable {
   device: GPUDevice;
 
@@ -30,40 +39,19 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
   protected initObservableBuffer(
     bindData: SAM.BindData<N>
   ): SAM.ObservableGPUBuffer {
-    let newObservableBuffer: SAM.ObservableGPUBuffer = undefined;
-
-    if (bindData.data.type === "float32Array") {
-      const typedData = bindData.data.getValue();
-      const buffer = this.device.createBuffer({
-        label: bindData.label,
-        size: typedData.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      });
-      newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
-      this.device.queue.writeBuffer(newObservableBuffer.buffer, 0, typedData);
-    } else if (bindData.data.type === "vertex") {
-      const typedData = bindData.data.getValue();
-      const buffer = this.device.createBuffer({
-        label: bindData.label,
-        size: typedData.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-      });
-      newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
-      this.device.queue.writeBuffer(newObservableBuffer.buffer, 0, typedData);
-    } else if (bindData.data.type === "index") {
-      const typedData = bindData.data.getValue();
-      const buffer = this.device.createBuffer({
-        label: bindData.label,
-        size: typedData.byteLength,
-        usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-      });
-      newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
-      this.device.queue.writeBuffer(newObservableBuffer.buffer, 0, typedData);
-    }
-
-    if (!newObservableBuffer) {
+    const bufferUsage = BIND_DATA_BUFFER_USAGE[bindData.data.type];
+    if (bufferUsage === undefined) {
       throw new Error("Unsupported bind data type");
     }
+
+    const typedData = bindData.data.getValue();
+    const buffer = this.device.createBuffer({
+      label: bindData.label,
+      size: typedData.byteLength,
+      usage: bufferUsage,
+    });
+    const newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
+    this.device.queue.writeBuffer(newObservableBuffer.buffer, 0, typedData);
 
     const watchKeys = bindData.watchKeys as (keyof N)[];
     if (watchKeys) {
@@ -83,7 +71,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
               const newBuffer = this.device.createBuffer({
                 label: bindData.label,
                 size: newData.byteLength,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                usage: bufferUsage,
               });
               this.device.queue.writeBuffer(newBuffer, 0, newData);
               newObservableBuffer.buffer.destroy();
