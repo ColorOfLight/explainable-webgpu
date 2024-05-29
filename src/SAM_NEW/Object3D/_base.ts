@@ -11,22 +11,22 @@ export class Object3D extends SAM.Node {
   }
 
   setTranslate(vector: SAM.Vector3): void {
-    this.transformMatrix.setTranslate(vector);
+    this.transformMatrix = this.transformMatrix.translate(vector);
   }
 
   setScale(vector: SAM.Vector3): void {
-    this.transformMatrix.setScale(vector);
+    this.transformMatrix = this.transformMatrix.scale(vector);
   }
 
   setRotateX(angle: number): void {
-    this.transformMatrix.setRotateX(angle);
+    this.transformMatrix = this.transformMatrix.rotateX(angle);
   }
 
   setRotateY(angle: number): void {
-    this.transformMatrix.setRotateY(angle);
+    this.transformMatrix = this.transformMatrix.rotateY(angle);
   }
 
   setRotateZ(angle: number): void {
-    this.transformMatrix.setRotateZ(angle);
+    this.transformMatrix = this.transformMatrix.rotateZ(angle);
   }
 }

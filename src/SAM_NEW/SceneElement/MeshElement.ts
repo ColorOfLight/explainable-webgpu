@@ -43,6 +43,7 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
           getValue: () =>
             new Float32Array(mesh.transformMatrix.toRenderingData()),
         },
+        watchKeys: ["transformMatrix"],
       },
     ];
   }
