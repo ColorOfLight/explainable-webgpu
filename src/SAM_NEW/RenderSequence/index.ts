@@ -13,9 +13,9 @@ export class RenderSequence {
     const vertexBuffer = geometryElement.vertexBuffer;
     const indexBuffer = geometryElement.indexBuffer;
     const indexCount = geometryElement.indexCount;
-    const meshBindGroup = meshElement.bindGroup;
-    const materialBindGroup = materialElement.bindGroup;
-    const cameraBindGroup = cameraElement.bindGroup;
+    const meshBindGroup = meshElement.observableBindGroup.bindGroup;
+    const materialBindGroup = materialElement.observableBindGroup.bindGroup;
+    const cameraBindGroup = cameraElement.observableBindGroup.bindGroup;
     const pipeline = pipelineElement.pipeline;
 
     this.runSequence = (passEncoder: GPURenderPassEncoder) => {

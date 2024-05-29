@@ -82,7 +82,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
   protected generateBindGroupSet(
     bindDataList: SAM.BindData<N>[],
     observableBuffers: SAM.ObservableGPUBuffer[]
-  ): [GPUBindGroupLayout, GPUBindGroup] {
+  ): [GPUBindGroupLayout, SAM.ObservableBindGroup] {
     const bindGroupLayout = this.device.createBindGroupLayout({
       entries: bindDataList.map((bindData, index) => {
         if (bindData.data.type === "float32Array") {
@@ -100,7 +100,36 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
       }),
     });
 
-    const bindGroup = this.device.createBindGroup({
+    const bindGroup = this.generateBindGroup(
+      bindGroupLayout,
+      bindDataList,
+      observableBuffers
+    );
+
+    const observableBindGroup = new SAM.ObservableBindGroup(bindGroup);
+    observableBuffers.forEach((observableBuffer) => {
+      const watchItem: SAM.MediatorWatchItem<keyof typeof observableBuffer> = {
+        key: "buffer",
+        onChange: () => {
+          observableBindGroup.bindGroup = this.generateBindGroup(
+            bindGroupLayout,
+            bindDataList,
+            observableBuffers
+          );
+        },
+      };
+      observableBuffer.mediator.watch(watchItem);
+    });
+
+    return [bindGroupLayout, observableBindGroup];
+  }
+
+  private generateBindGroup(
+    bindGroupLayout: GPUBindGroupLayout,
+    bindDataList: SAM.BindData<N>[],
+    observableBuffers: SAM.ObservableGPUBuffer[]
+  ): GPUBindGroup {
+    return this.device.createBindGroup({
       layout: bindGroupLayout,
       entries: bindDataList.map((bindData, index) => {
         if (bindData.data.type === "float32Array") {
@@ -115,7 +144,5 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
         throw new Error("Unsupported bind data type");
       }),
     });
-
-    return [bindGroupLayout, bindGroup];
   }
 }

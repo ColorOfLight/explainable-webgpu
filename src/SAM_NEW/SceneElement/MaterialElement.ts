@@ -4,7 +4,7 @@ import { NodeElement } from "./_base";
 
 export class MaterialElement extends NodeElement<SAM.Material> {
   observableBuffers: SAM.ObservableGPUBuffer[];
-  bindGroup: GPUBindGroup;
+  observableBindGroup: SAM.ObservableBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
   vertexShaderModule: GPUShaderModule;
   fragmentShaderModule: GPUShaderModule;
@@ -18,12 +18,12 @@ export class MaterialElement extends NodeElement<SAM.Material> {
     this.observableBuffers = bindDataList.map(
       this.initObservableBuffer.bind(this)
     );
-    const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
+    const [bindGroupLayout, observableBindGroup] = this.generateBindGroupSet(
       bindDataList,
       this.observableBuffers
     );
 
-    this.bindGroup = bindGroup;
+    this.observableBindGroup = observableBindGroup;
     this.bindGroupLayout = bindGroupLayout;
 
     this.vertexShaderModule = device.createShaderModule({

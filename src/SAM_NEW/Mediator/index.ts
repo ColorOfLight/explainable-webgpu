@@ -1,5 +1,5 @@
-export interface MediatorWatchItem<T> {
-  key: T;
+export interface MediatorWatchItem<K> {
+  key: K;
   onChange: () => void;
 }
 

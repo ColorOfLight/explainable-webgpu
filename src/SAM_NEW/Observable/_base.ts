@@ -1,9 +1,9 @@
 import * as SAM from "@site/src/SAM_NEW";
 
 export class Observable {
-  mediator: SAM.Mediator<Observable>;
+  mediator: SAM.Mediator<this>;
 
   constructor() {
-    this.mediator = new SAM.Mediator(this as Observable);
+    this.mediator = new SAM.Mediator(this);
   }
 }

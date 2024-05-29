@@ -6,7 +6,7 @@ export class CameraElement<
   C extends SAM.Camera = SAM.Camera,
 > extends NodeElement<C> {
   observableBuffers: SAM.ObservableGPUBuffer[];
-  bindGroup: GPUBindGroup;
+  observableBindGroup: SAM.ObservableBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
 
   constructor(device: GPUDevice, camera: C) {
@@ -17,12 +17,12 @@ export class CameraElement<
     this.observableBuffers = bindDataList.map(
       this.initObservableBuffer.bind(this)
     );
-    const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
+    const [bindGroupLayout, observableBindGroup] = this.generateBindGroupSet(
       bindDataList,
       this.observableBuffers
     );
 
-    this.bindGroup = bindGroup;
+    this.observableBindGroup = observableBindGroup;
     this.bindGroupLayout = bindGroupLayout;
   }
 

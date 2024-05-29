@@ -6,7 +6,7 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
   geometryNodeId: Symbol;
   materialNodeId: Symbol;
   observableBuffers: SAM.ObservableGPUBuffer[];
-  bindGroup: GPUBindGroup;
+  observableBindGroup: SAM.ObservableBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
 
   constructor(device: GPUDevice, mesh: SAM.Mesh) {
@@ -20,12 +20,12 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
     this.observableBuffers = bindDataList.map(
       this.initObservableBuffer.bind(this)
     );
-    const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
+    const [bindGroupLayout, observableBindGroup] = this.generateBindGroupSet(
       bindDataList,
       this.observableBuffers
     );
 
-    this.bindGroup = bindGroup;
+    this.observableBindGroup = observableBindGroup;
     this.bindGroupLayout = bindGroupLayout;
   }
 
