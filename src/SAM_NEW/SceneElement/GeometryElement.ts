@@ -65,7 +65,7 @@ export class GeometryElement extends NodeElement<SAM.Geometry> {
 
     for (let i = 0; i < vertexes.length; i++) {
       const vertex = vertexes[i];
-      const colorData = vertex.color.toNumberArray();
+      const colorData = vertex.color?.toNumberArray();
 
       data[i * vertexFloat32Size] = vertex.position[0];
       data[i * vertexFloat32Size + 1] = vertex.position[1];
@@ -75,9 +75,9 @@ export class GeometryElement extends NodeElement<SAM.Geometry> {
       data[i * vertexFloat32Size + 5] = vertex.normal[2];
       data[i * vertexFloat32Size + 6] = vertex.texCoord[0];
       data[i * vertexFloat32Size + 7] = vertex.texCoord[1];
-      data[i * vertexFloat32Size + 8] = vertex.color ? colorData[0] : 0;
-      data[i * vertexFloat32Size + 9] = vertex.color ? colorData[1] : 0;
-      data[i * vertexFloat32Size + 10] = vertex.color ? colorData[2] : 0;
+      data[i * vertexFloat32Size + 8] = colorData ? colorData[0] : 0;
+      data[i * vertexFloat32Size + 9] = colorData ? colorData[1] : 0;
+      data[i * vertexFloat32Size + 10] = colorData ? colorData[2] : 0;
     }
 
     return data;
