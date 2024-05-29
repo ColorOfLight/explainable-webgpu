@@ -1,10 +1,14 @@
 import * as SAM from "@site/src/SAM_NEW";
 
+export interface Object3DOptions {
+  label?: string;
+}
+
 export class Object3D extends SAM.Node {
   transformMatrix: SAM.Matrix4;
 
-  constructor(label?: string) {
-    super(label ?? "Object3D");
+  constructor(options?: Object3DOptions) {
+    super(options?.label ?? "Object3D");
 
     this.transformMatrix = new SAM.Matrix4();
     this.transformMatrix.setIdentity();

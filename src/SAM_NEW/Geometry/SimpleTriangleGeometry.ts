@@ -1,9 +1,11 @@
 import * as SAM from "@site/src/SAM_NEW";
-import { Geometry } from "./_base";
+import { Geometry, GeometryOptions } from "./_base";
+
+export interface SimpleTriangleGeometryOptions extends GeometryOptions {}
 
 export class SimpleTriangleGeometry extends Geometry {
-  constructor(size: number, label?: string) {
-    super(label ?? "SimpleTriangleGeometry");
+  constructor(size: number, options?: SimpleTriangleGeometryOptions) {
+    super(options);
 
     this.vertexes = [
       {

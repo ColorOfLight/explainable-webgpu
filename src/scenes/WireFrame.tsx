@@ -7,7 +7,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const sceneManager = renderer.createSceneManager();
 
-  const geometry = new SAM.CubeGeometry(0.5, 0.5, 0.5, undefined, {
+  const geometry = new SAM.CubeGeometry(0.5, 0.5, 0.5, {
     colors: {
       front: new SAM.Color(0.5, 0.5, 0),
       back: new SAM.Color(0.5, 0, 0.5),

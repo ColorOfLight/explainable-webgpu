@@ -1,12 +1,20 @@
 import * as SAM from "@site/src/SAM_NEW";
 
+export interface CameraOptions {
+  label?: string;
+}
+
 export class Camera extends SAM.Node {
   eye: SAM.Vector3;
   target: SAM.Vector3;
   up: SAM.Vector3;
 
-  constructor(eye?: SAM.Vector3, target?: SAM.Vector3, label?: string) {
-    super("Camera" ?? label);
+  constructor(
+    eye?: SAM.Vector3,
+    target?: SAM.Vector3,
+    options?: CameraOptions
+  ) {
+    super(options?.label ?? "Camera");
 
     this.target = target ?? new SAM.Vector3(0, 0, 0);
     this.eye = eye ?? new SAM.Vector3(0, 0, 1);

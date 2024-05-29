@@ -4,6 +4,7 @@ import { BASE_VERTEX_BUFFER_LAYOUT } from "./_constants";
 
 export interface GeometryOptions {
   isWireframe?: boolean;
+  label?: string;
 }
 
 export class Geometry extends SAM.Node {
@@ -12,8 +13,8 @@ export class Geometry extends SAM.Node {
   protected vertexBufferLayout: GPUVertexBufferLayout;
   isWireframe: boolean;
 
-  constructor(label?: string, options?: GeometryOptions) {
-    super(label ?? "Geometry");
+  constructor(options?: GeometryOptions) {
+    super(options?.label ?? "Geometry");
 
     this.vertexes = [];
     this.indexes = [];

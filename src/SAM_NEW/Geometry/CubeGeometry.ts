@@ -21,10 +21,9 @@ export class CubeGeometry extends Geometry {
     width: number,
     height: number,
     depth: number,
-    label?: string,
     options?: CubeGeometryOptions
   ) {
-    super(label ?? "CubeGeometry", options);
+    super(options);
 
     const defaultColor = new SAM.Color(1, 1, 1);
 
