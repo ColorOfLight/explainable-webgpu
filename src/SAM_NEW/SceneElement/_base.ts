@@ -10,16 +10,16 @@ export class SceneElement {
 
 export class NodeElement<N extends SAM.Node> extends SceneElement {
   nodeId: Symbol;
-  mediator: SAM.Mediator<N>;
+  nodeMediator: SAM.Mediator<N>;
 
   constructor(device: GPUDevice, node: N) {
     super(device);
 
     this.nodeId = node.getId();
-    this.mediator = new SAM.Mediator(node);
+    this.nodeMediator = new SAM.Mediator(node);
 
     const watchItems = this.getWatchItems();
-    this.mediator.watchAll(watchItems);
+    this.nodeMediator.watchAll(watchItems);
   }
 
   protected getWatchItems(): SAM.MediatorWatchItem<keyof N>[] {
@@ -68,7 +68,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
           };
         });
 
-        this.mediator.watchAll(watchItems);
+        this.nodeMediator.watchAll(watchItems);
       }
 
       return newDynamicBuffer;
