@@ -97,10 +97,10 @@ export class OrbitalControl {
           this.sphericalCoordinate.addAzimuth(deltaX * this.rotationSpeed);
           this.sphericalCoordinate.addInclination(deltaY * this.rotationSpeed);
         }
-      }
 
-      this.camera.eye = this.sphericalCoordinate.getDestination();
-      this.camera.up = this.sphericalCoordinate.getUp();
+        this.camera.eye = this.sphericalCoordinate.getDestination();
+        this.camera.up = this.sphericalCoordinate.getUp();
+      }
 
       this.prevX = event.clientX;
       this.prevY = event.clientY;
