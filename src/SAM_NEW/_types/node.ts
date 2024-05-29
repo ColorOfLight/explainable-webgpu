@@ -11,19 +11,6 @@ export interface Vertex {
   color?: SAM.Color;
 }
 
-export interface Observable<U extends () => unknown = () => unknown> {
-  label: string;
-  object: object;
-  keys: string[];
-  getUpdatedValue: U;
-}
-
-export interface BufferDataObservable<
-  U extends () => BufferData = () => BufferData,
-> extends Observable<U> {}
-export interface RawValueObservable<U extends () => Record<string, unknown>>
-  extends Observable<U> {}
-
 type BindDataList = [
   {
     type: "float32Array";
