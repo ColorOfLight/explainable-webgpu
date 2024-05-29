@@ -20,7 +20,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const mesh1 = new SAM.Mesh(
     geometry,
-    new SAM.BasicMaterial(undefined, { color: new SAM.Color(1, 0, 0) })
+    new SAM.BasicMaterial({ color: new SAM.Color(1, 0, 0) })
   );
   mesh1.setTranslate(new SAM.Vector3(-0.5, 0, 0));
 

@@ -21,7 +21,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
 
   const mesh1 = new SAM.Mesh(
     geometry,
-    new SAM.BasicMaterial(undefined, {
+    new SAM.BasicMaterial({
       color: new SAM.Color(1, 0, 0),
     })
   );

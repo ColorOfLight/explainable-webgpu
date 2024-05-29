@@ -11,7 +11,7 @@ export interface BasicMaterialOptions extends MaterialOptions {
 export class BasicMaterial extends Material {
   color?: SAM.Color;
 
-  constructor(label?: string, options?: BasicMaterialOptions) {
+  constructor(options?: BasicMaterialOptions) {
     super(options);
     this.color = options?.color ?? new SAM.Color(-1, -1, -1);
 
