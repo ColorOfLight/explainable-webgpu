@@ -1,45 +1,47 @@
 import { useRef, useEffect } from "react";
-import * as SAM from "@site/src/SAM";
+import * as SAM from "@site/src/SAM_NEW";
 
 const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const renderer = new SAM.WebGPURenderer(canvas);
   await renderer.init();
 
-  const scene = new SAM.Scene();
+  const sceneManager = renderer.createSceneManager();
 
   const material = new SAM.BasicMaterial({
-    color: new SAM.Color([1, 0, 0]),
-    isWireframe: true,
+    color: new SAM.Color(1, 0, 0),
   });
 
   const planeGeometry = new SAM.PlaneGeometry(0.5, 0.5, {
     widthSegments: 5,
     heightSegments: 5,
+    isWireframe: true,
   });
 
   const cubeGeometry = new SAM.CubeGeometry(0.5, 0.5, 0.5, {
     widthSegments: 3,
     heightSegments: 4,
     depthSegments: 5,
+    isWireframe: true,
   });
 
   const sphereGeometry = new SAM.SphereGeometry(0.25, {
     widthSegments: 32,
     heightSegments: 32,
+    isWireframe: true,
   });
 
   const plane = new SAM.Mesh(planeGeometry, material);
-  plane.setTranslate(new SAM.Vector3([-0.5, 0, 0]));
+  plane.setTranslate(new SAM.Vector3(-0.5, 0, 0));
 
   const cube = new SAM.Mesh(cubeGeometry, material);
-  cube.setTranslate(new SAM.Vector3([0.5, 0, 0]));
+  cube.setTranslate(new SAM.Vector3(0.5, 0, 0));
 
   const sphere = new SAM.Mesh(sphereGeometry, material);
-  sphere.setTranslate(new SAM.Vector3([0, 0, -0.5]));
+  sphere.setTranslate(new SAM.Vector3(0, 0, -0.5));
 
-  scene.add(plane);
-  scene.add(cube);
-  scene.add(sphere);
+  sceneManager.add(plane);
+  sceneManager.add(cube);
+  sceneManager.add(sphere);
 
   const camera = new SAM.PerspectiveCamera(
     Math.PI / 2,
@@ -48,7 +50,9 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     100
   );
 
-  camera.eye = new SAM.Vector3([0, 0, 1]);
+  camera.eye = new SAM.Vector3(0, 0, 1);
+
+  sceneManager.add(camera);
 
   const orbitalControl = new SAM.OrbitalControl(canvas);
   orbitalControl.attachTo(camera);
@@ -61,7 +65,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     cube.setRotateY(0.01);
     sphere.setRotateZ(0.01);
 
-    renderer.render(scene, camera);
+    renderer.render(sceneManager, camera);
   });
 };
 
