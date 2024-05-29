@@ -15,6 +15,15 @@ type BindDataList = [
   {
     type: "float32Array";
     getValue: () => Float32Array;
+    visibility: GPUShaderStageFlags;
+  },
+  {
+    type: "vertex";
+    getValue: () => Float32Array;
+  },
+  {
+    type: "index";
+    getValue: () => Uint16Array;
   },
 
   // TODO: Implement these types
@@ -33,6 +42,5 @@ type BindDataList = [
 export interface BindData<N extends SAM.Node> {
   label: string;
   data: BindDataList[number];
-  visibility: GPUShaderStageFlags;
   watchKeys?: (keyof N)[];
 }

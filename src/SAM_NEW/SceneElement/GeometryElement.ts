@@ -3,8 +3,8 @@ import * as SAM from "@site/src/SAM_NEW";
 import { NodeElement } from "./_base";
 
 export class GeometryElement extends NodeElement<SAM.Geometry> {
-  vertexBuffer: GPUBuffer;
-  indexBuffer: GPUBuffer;
+  observableVertexBuffer: SAM.ObservableGPUBuffer;
+  observableIndexBuffer: SAM.ObservableGPUBuffer;
   indexCount: number;
   vertexBufferLayout: GPUVertexBufferLayout;
   topology: GPUPrimitiveTopology;
@@ -16,23 +16,27 @@ export class GeometryElement extends NodeElement<SAM.Geometry> {
     const vertexBufferLayout = geometry.getVertexBufferLayout();
     const indexes = geometry.getIndexes();
 
-    const vertexBufferData = this.generateVertexBufferData(
-      vertexes,
-      vertexBufferLayout
-    );
-    const indexBufferData = this.getIndexBufferData(indexes);
-
-    this.vertexBuffer = device.createBuffer({
-      size: vertexBufferData.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
-    this.indexBuffer = device.createBuffer({
-      size: indexBufferData.byteLength,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+    const observableVertexBuffer = this.initObservableBuffer({
+      label: "vertexBuffer",
+      data: {
+        type: "vertex",
+        getValue: () =>
+          this.generateVertexBufferData(vertexes, vertexBufferLayout),
+      },
+      watchKeys: [],
     });
 
-    this.device.queue.writeBuffer(this.vertexBuffer, 0, vertexBufferData);
-    this.device.queue.writeBuffer(this.indexBuffer, 0, indexBufferData);
+    const observableIndexBuffer = this.initObservableBuffer({
+      label: "indexBuffer",
+      data: {
+        type: "index",
+        getValue: () => this.getIndexBufferData(indexes, geometry.isWireframe),
+      },
+      watchKeys: ["isWireframe"],
+    });
+
+    this.observableVertexBuffer = observableVertexBuffer;
+    this.observableIndexBuffer = observableIndexBuffer;
 
     this.indexCount = indexes.length;
     this.vertexBufferLayout = vertexBufferLayout;
@@ -70,21 +74,21 @@ export class GeometryElement extends NodeElement<SAM.Geometry> {
     return data;
   }
 
-  getIndexBufferData(indexes: number[]): Uint16Array {
-    // if (this.isWireframe) {
-    //   const indexBufferData = new Uint16Array(this.indexes.length * 2);
-    //   for (let i = 0; i < this.indexes.length; i++) {
-    //     if (i % 3 === 0) {
-    //       indexBufferData[i * 2] = this.indexes[i];
-    //       indexBufferData[i * 2 + 5] = this.indexes[i];
-    //     } else {
-    //       indexBufferData[(i - 1) * 2 + 1] = this.indexes[i];
-    //       indexBufferData[i * 2] = this.indexes[i];
-    //     }
-    //   }
+  getIndexBufferData(indexes: number[], isWireframe: boolean): Uint16Array {
+    if (isWireframe) {
+      const indexBufferData = new Uint16Array(indexes.length * 2);
+      for (let i = 0; i < indexes.length; i++) {
+        if (i % 3 === 0) {
+          indexBufferData[i * 2] = indexes[i];
+          indexBufferData[i * 2 + 5] = indexes[i];
+        } else {
+          indexBufferData[(i - 1) * 2 + 1] = indexes[i];
+          indexBufferData[i * 2] = indexes[i];
+        }
+      }
 
-    //   return indexBufferData;
-    // }
+      return indexBufferData;
+    }
 
     // Make sure the indexes are a multiple of 4 bytes for the correct buffer size
     const indexBufferData = new Uint16Array(Math.ceil(indexes.length / 2) * 2);

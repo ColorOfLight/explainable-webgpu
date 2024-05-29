@@ -30,53 +30,73 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
   protected initObservableBuffer(
     bindData: SAM.BindData<N>
   ): SAM.ObservableGPUBuffer {
+    let newObservableBuffer: SAM.ObservableGPUBuffer = undefined;
+
     if (bindData.data.type === "float32Array") {
       const typedData = bindData.data.getValue();
-
       const buffer = this.device.createBuffer({
         label: bindData.label,
         size: typedData.byteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       });
-      const newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
-
+      newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
       this.device.queue.writeBuffer(newObservableBuffer.buffer, 0, typedData);
-
-      const watchKeys = bindData.watchKeys as (keyof N)[];
-      if (watchKeys) {
-        const getValue = bindData.data.getValue;
-        const watchItems = watchKeys.map((key) => {
-          return {
-            key,
-            onChange: () => {
-              const newData = getValue();
-              if (newData.byteLength === newObservableBuffer.buffer.size) {
-                this.device.queue.writeBuffer(
-                  newObservableBuffer.buffer,
-                  0,
-                  newData
-                );
-              } else {
-                const newBuffer = this.device.createBuffer({
-                  label: bindData.label,
-                  size: newData.byteLength,
-                  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-                });
-                this.device.queue.writeBuffer(newBuffer, 0, newData);
-                newObservableBuffer.buffer.destroy();
-                newObservableBuffer.buffer = newBuffer;
-              }
-            },
-          };
-        });
-
-        this.nodeMediator.watchAll(watchItems);
-      }
-
-      return newObservableBuffer;
+    } else if (bindData.data.type === "vertex") {
+      const typedData = bindData.data.getValue();
+      const buffer = this.device.createBuffer({
+        label: bindData.label,
+        size: typedData.byteLength,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      });
+      newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
+      this.device.queue.writeBuffer(newObservableBuffer.buffer, 0, typedData);
+    } else if (bindData.data.type === "index") {
+      const typedData = bindData.data.getValue();
+      const buffer = this.device.createBuffer({
+        label: bindData.label,
+        size: typedData.byteLength,
+        usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+      });
+      newObservableBuffer = new SAM.ObservableGPUBuffer(buffer);
+      this.device.queue.writeBuffer(newObservableBuffer.buffer, 0, typedData);
     }
 
-    throw new Error("Unsupported bind data type");
+    if (!newObservableBuffer) {
+      throw new Error("Unsupported bind data type");
+    }
+
+    const watchKeys = bindData.watchKeys as (keyof N)[];
+    if (watchKeys) {
+      const getValue = bindData.data.getValue;
+      const watchItems = watchKeys.map((key) => {
+        return {
+          key,
+          onChange: () => {
+            const newData = getValue();
+            if (newData.byteLength === newObservableBuffer.buffer.size) {
+              this.device.queue.writeBuffer(
+                newObservableBuffer.buffer,
+                0,
+                newData
+              );
+            } else {
+              const newBuffer = this.device.createBuffer({
+                label: bindData.label,
+                size: newData.byteLength,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+              });
+              this.device.queue.writeBuffer(newBuffer, 0, newData);
+              newObservableBuffer.buffer.destroy();
+              newObservableBuffer.buffer = newBuffer;
+            }
+          },
+        };
+      });
+
+      this.nodeMediator.watchAll(watchItems);
+    }
+
+    return newObservableBuffer;
   }
 
   protected generateBindGroupSet(
@@ -89,7 +109,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
           return {
             label: `Bind data layout(${index}): ${bindData.label}`,
             binding: index,
-            visibility: bindDataList[index].visibility,
+            visibility: bindData.data.visibility,
             buffer: {
               type: "uniform",
             },

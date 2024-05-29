@@ -10,8 +10,8 @@ export class RenderSequence {
     cameraElement: SAM.CameraElement,
     pipelineElement: SAM.PipelineElement
   ) {
-    const vertexBuffer = geometryElement.vertexBuffer;
-    const indexBuffer = geometryElement.indexBuffer;
+    const vertexBuffer = geometryElement.observableVertexBuffer.buffer;
+    const indexBuffer = geometryElement.observableIndexBuffer.buffer;
     const indexCount = geometryElement.indexCount;
     const meshBindGroup = meshElement.observableBindGroup.bindGroup;
     const materialBindGroup = materialElement.observableBindGroup.bindGroup;

@@ -33,9 +33,9 @@ export class CameraElement<
   getBindDataList(camera: C): SAM.BindData<C>[] {
     const viewTransformBindData = {
       label: "viewTransform",
-      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
       data: {
         type: "float32Array" as const,
+        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         getValue: () =>
           new Float32Array(camera.getViewTransformMatrix().toRenderingData()),
       },
@@ -44,9 +44,10 @@ export class CameraElement<
 
     const eyeVectorBindData = {
       label: "eyeVector",
-      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+
       data: {
         type: "float32Array" as const,
+        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         getValue: () => new Float32Array(camera.getEyeVector().toNumberArray()),
       },
       watchKeys: ["eye"] as (keyof C)[],
@@ -55,9 +56,9 @@ export class CameraElement<
     if (camera instanceof SAM.PerspectiveCamera) {
       const projectionTransformBindData = {
         label: "projTransform",
-        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         data: {
           type: "float32Array" as const,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           getValue: () =>
             new Float32Array(camera.getProjTransformMatrix().toRenderingData()),
         },
@@ -74,9 +75,9 @@ export class CameraElement<
     if (camera instanceof SAM.OrthographicCamera) {
       const projectionTransformBindData = {
         label: "projTransform",
-        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         data: {
           type: "float32Array" as const,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           getValue: () =>
             new Float32Array(camera.getProjTransformMatrix().toRenderingData()),
         },

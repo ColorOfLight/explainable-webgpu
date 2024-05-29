@@ -39,10 +39,10 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
         label: "transformMatrix",
         data: {
           type: "float32Array",
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           getValue: () =>
             new Float32Array(mesh.transformMatrix.toRenderingData()),
         },
-        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
       },
     ];
   }

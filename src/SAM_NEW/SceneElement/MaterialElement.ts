@@ -48,9 +48,9 @@ export class MaterialElement extends NodeElement<SAM.Material> {
           label: "color",
           data: {
             type: "float32Array",
+            visibility: GPUShaderStage.FRAGMENT,
             getValue: () => material.color.toTypedArray(),
           },
-          visibility: GPUShaderStage.FRAGMENT,
         },
       ];
     }

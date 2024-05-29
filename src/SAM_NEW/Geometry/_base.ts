@@ -20,7 +20,7 @@ export class Geometry extends SAM.Node {
   protected vertexes: SAM.Vertex[];
   protected indexes: number[];
   protected vertexBufferLayout: GPUVertexBufferLayout;
-  private isWireframe: boolean;
+  isWireframe: boolean;
 
   constructor(label?: string) {
     super(label ?? "Geometry");
