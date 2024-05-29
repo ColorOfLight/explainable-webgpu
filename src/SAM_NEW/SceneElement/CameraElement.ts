@@ -5,7 +5,7 @@ import { NodeElement } from "./_base";
 export class CameraElement<
   C extends SAM.Camera = SAM.Camera,
 > extends NodeElement<C> {
-  buffers: GPUBuffer[];
+  dynamicBuffers: SAM.DynamicGPUBuffer[];
   bindGroup: GPUBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
 
@@ -14,10 +14,10 @@ export class CameraElement<
 
     const bindDataList = this.getBindDataList(camera);
 
-    this.buffers = bindDataList.map(this.initWatchedBuffer.bind(this));
+    this.dynamicBuffers = bindDataList.map(this.initDynamicBuffer.bind(this));
     const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
       bindDataList,
-      this.buffers
+      this.dynamicBuffers
     );
 
     this.bindGroup = bindGroup;

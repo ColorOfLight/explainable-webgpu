@@ -26,17 +26,19 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
     throw new Error("You must override this method, setMediatorWatchers");
   }
 
-  protected initWatchedBuffer(bindData: SAM.BindData<N>) {
+  protected initDynamicBuffer(bindData: SAM.BindData<N>): SAM.DynamicGPUBuffer {
     if (bindData.data.type === "float32Array") {
       const typedData = bindData.data.getValue();
 
-      const buffer = this.device.createBuffer({
-        label: bindData.label,
-        size: typedData.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      });
+      const newDynamicBuffer = {
+        buffer: this.device.createBuffer({
+          label: bindData.label,
+          size: typedData.byteLength,
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        }),
+      };
 
-      this.device.queue.writeBuffer(buffer, 0, typedData);
+      this.device.queue.writeBuffer(newDynamicBuffer.buffer, 0, typedData);
 
       const watchKeys = bindData.watchKeys as (keyof N)[];
       if (watchKeys) {
@@ -46,7 +48,22 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
             key,
             onChange: () => {
               const newData = getValue();
-              this.device.queue.writeBuffer(buffer, 0, newData);
+              if (newData.byteLength === newDynamicBuffer.buffer.size) {
+                this.device.queue.writeBuffer(
+                  newDynamicBuffer.buffer,
+                  0,
+                  newData
+                );
+              } else {
+                const newBuffer = this.device.createBuffer({
+                  label: bindData.label,
+                  size: newData.byteLength,
+                  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                });
+                this.device.queue.writeBuffer(newBuffer, 0, newData);
+                newDynamicBuffer.buffer.destroy();
+                newDynamicBuffer.buffer = newBuffer;
+              }
             },
           };
         });
@@ -54,7 +71,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
         this.mediator.watchAll(watchItems);
       }
 
-      return buffer;
+      return newDynamicBuffer;
     }
 
     throw new Error("Unsupported bind data type");
@@ -62,7 +79,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
 
   protected generateBindGroupSet(
     bindDataList: SAM.BindData<N>[],
-    buffers: GPUBuffer[]
+    dynamicBuffers: SAM.DynamicGPUBuffer[]
   ): [GPUBindGroupLayout, GPUBindGroup] {
     const bindGroupLayout = this.device.createBindGroupLayout({
       entries: bindDataList.map((bindData, index) => {
@@ -88,7 +105,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
           return {
             binding: index,
             resource: {
-              buffer: buffers[index],
+              buffer: dynamicBuffers[index].buffer,
             },
           };
         }
