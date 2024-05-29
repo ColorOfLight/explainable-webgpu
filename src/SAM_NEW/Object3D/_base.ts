@@ -30,14 +30,3 @@ export class Object3D extends SAM.Node {
     this.transformMatrix.setRotateZ(angle);
   }
 }
-
-export class Mesh extends Object3D {
-  geometry: SAM.Geometry;
-  material: SAM.Material;
-
-  constructor(geometry: SAM.Geometry, material: SAM.Material, label?: string) {
-    super(label ?? "Mesh");
-    this.geometry = geometry;
-    this.material = material;
-  }
-}
