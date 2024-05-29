@@ -3,24 +3,19 @@ import * as SAM from "@site/src/SAM_NEW";
 import { NodeElement } from "./_base";
 
 export class MeshElement extends NodeElement<SAM.Mesh> {
-  geometryElement: SAM.GeometryElement;
-  materialElement: SAM.MaterialElement;
+  geometryNodeId: Symbol;
+  materialNodeId: Symbol;
   buffers: GPUBuffer[];
   bindGroup: GPUBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
 
-  constructor(
-    device: GPUDevice,
-    mesh: SAM.Mesh,
-    geometryElement: SAM.GeometryElement,
-    materialElement: SAM.MaterialElement
-  ) {
+  constructor(device: GPUDevice, mesh: SAM.Mesh) {
     super(device, mesh);
 
     const bindDataList = this.getBindDataList(mesh);
 
-    this.geometryElement = geometryElement;
-    this.materialElement = materialElement;
+    this.geometryNodeId = mesh.geometry.getId();
+    this.materialNodeId = mesh.material.getId();
 
     this.buffers = bindDataList.map(this.initBuffer.bind(this));
     const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(

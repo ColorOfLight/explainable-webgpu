@@ -5,14 +5,16 @@ export class RenderSequence {
 
   constructor(
     meshElement: SAM.MeshElement,
+    geometryElement: SAM.GeometryElement,
+    materialElement: SAM.MaterialElement,
     cameraElement: SAM.CameraElement,
     pipelineElement: SAM.PipelineElement
   ) {
-    const vertexBuffer = meshElement.geometryElement.vertexBuffer;
-    const indexBuffer = meshElement.geometryElement.indexBuffer;
-    const indexCount = meshElement.geometryElement.indexCount;
+    const vertexBuffer = geometryElement.vertexBuffer;
+    const indexBuffer = geometryElement.indexBuffer;
+    const indexCount = geometryElement.indexCount;
     const meshBindGroup = meshElement.bindGroup;
-    const materialBindGroup = meshElement.materialElement.bindGroup;
+    const materialBindGroup = materialElement.bindGroup;
     const cameraBindGroup = cameraElement.bindGroup;
     const pipeline = pipelineElement.pipeline;
 

@@ -53,12 +53,7 @@ export class SceneManager {
 
       let meshElement: SAM.MeshElement;
       if (!this.nodeElements.meshElements.has(node.getId())) {
-        meshElement = new SAM.MeshElement(
-          this.device,
-          node,
-          geometryElement,
-          materialElement
-        );
+        meshElement = new SAM.MeshElement(this.device, node);
         this.nodeElements.meshElements.set(node.getId(), meshElement);
       } else {
         meshElement = this.nodeElements.meshElements.get(node.getId());
@@ -90,15 +85,33 @@ export class SceneManager {
 
     const renderSequences: SAM.RenderSequence[] = meshElements.map(
       (meshElement) => {
+        const geometryElement = this.nodeElements.geometryElements.get(
+          meshElement.geometryNodeId
+        );
+        if (geometryElement === undefined) {
+          throw new Error("Geometry not found in the scene");
+        }
+
+        const materialElement = this.nodeElements.materialElements.get(
+          meshElement.materialNodeId
+        );
+        if (materialElement === undefined) {
+          throw new Error("Material not found in the scene");
+        }
+
         const pipelineElement = new SAM.PipelineElement(
           this.device,
           this.canvasFormat,
           meshElement,
+          geometryElement,
+          materialElement,
           cameraElement
         );
 
         return new SAM.RenderSequence(
           meshElement,
+          geometryElement,
+          materialElement,
           cameraElement,
           pipelineElement
         );
