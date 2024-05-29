@@ -10,10 +10,6 @@ struct VertexOutput {
   @location(1) color: vec3f,
 };
 
-// @group(0) @binding(0) var<uniform> viewMatrix: mat4x4f;
-// @group(0) @binding(1) var<uniform> projMatrix: mat4x4f;
-// @group(1) @binding(0) var<uniform> modelMatrix: mat4x4f;
-
 @group(0) @binding(0) var<uniform> modelMatrix: mat4x4f;
 @group(2) @binding(0) var<uniform> viewMatrix: mat4x4f;
 @group(2) @binding(1) var<uniform> projMatrix: mat4x4f;
@@ -22,7 +18,6 @@ struct VertexOutput {
 fn vertexMain(input: VertexInput) -> VertexOutput  {
   var output: VertexOutput;
   output.position = projMatrix * viewMatrix * modelMatrix * vec4f(input.position, 1);
-  // output.position = modelMatrix * vec4f(input.position, 1);
 
   output.color = input.color;
 

@@ -1,8 +1,8 @@
 import * as SAM from "@site/src/SAM_NEW";
 import { Material } from "./_base";
 
-import BasicMaterialVertexShader from "../shaders/BasicMaterial/vertex.wgsl";
-import BasicMaterialFragmentShader from "../shaders/BasicMaterial/fragment.wgsl";
+import BasicMaterialVertexShader from "../_shaders/BasicMaterial/vertex.wgsl";
+import BasicMaterialFragmentShader from "../_shaders/BasicMaterial/fragment.wgsl";
 
 export interface BasicMaterialOptions {
   color?: SAM.Color;
