@@ -9,13 +9,18 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
   bindGroup: GPUBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
 
-  constructor(device: GPUDevice, mesh: SAM.Mesh) {
+  constructor(
+    device: GPUDevice,
+    mesh: SAM.Mesh,
+    geometryElement: SAM.GeometryElement,
+    materialElement: SAM.MaterialElement
+  ) {
     super(device, mesh);
 
     const bindDataList = this.getBindDataList(mesh);
 
-    this.geometryElement = new SAM.GeometryElement(device, mesh.geometry);
-    this.materialElement = new SAM.MaterialElement(device, mesh.material);
+    this.geometryElement = geometryElement;
+    this.materialElement = materialElement;
 
     this.buffers = bindDataList.map(this.initBuffer.bind(this));
     const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
