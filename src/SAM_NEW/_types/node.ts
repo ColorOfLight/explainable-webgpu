@@ -49,7 +49,3 @@ export interface BindData<N extends SAM.Node> {
   visibility: GPUShaderStageFlags;
   watchKeys?: (keyof N)[];
 }
-
-export interface DynamicGPUBuffer {
-  buffer: GPUBuffer;
-}

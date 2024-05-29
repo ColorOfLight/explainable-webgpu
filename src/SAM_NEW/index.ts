@@ -2,6 +2,9 @@
 export * from "./_types";
 export * from "./_utils";
 
+// Util Classes
+export * from "./Observable";
+
 // Basic Classes
 export * from "./Color";
 export * from "./Vector";

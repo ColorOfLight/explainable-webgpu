@@ -3,7 +3,7 @@ import * as SAM from "@site/src/SAM_NEW";
 import { NodeElement } from "./_base";
 
 export class MaterialElement extends NodeElement<SAM.Material> {
-  dynamicBuffers: SAM.DynamicGPUBuffer[];
+  observableBuffers: SAM.ObservableGPUBuffer[];
   bindGroup: GPUBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
   vertexShaderModule: GPUShaderModule;
@@ -15,10 +15,12 @@ export class MaterialElement extends NodeElement<SAM.Material> {
 
     const bindDataList = this.getBindDataList(material);
 
-    this.dynamicBuffers = bindDataList.map(this.initDynamicBuffer.bind(this));
+    this.observableBuffers = bindDataList.map(
+      this.initObservableBuffer.bind(this)
+    );
     const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
       bindDataList,
-      this.dynamicBuffers
+      this.observableBuffers
     );
 
     this.bindGroup = bindGroup;

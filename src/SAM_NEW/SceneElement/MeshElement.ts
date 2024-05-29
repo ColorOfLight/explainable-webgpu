@@ -5,7 +5,7 @@ import { NodeElement } from "./_base";
 export class MeshElement extends NodeElement<SAM.Mesh> {
   geometryNodeId: Symbol;
   materialNodeId: Symbol;
-  dynamicBuffers: SAM.DynamicGPUBuffer[];
+  observableBuffers: SAM.ObservableGPUBuffer[];
   bindGroup: GPUBindGroup;
   bindGroupLayout: GPUBindGroupLayout;
 
@@ -17,10 +17,12 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
     this.geometryNodeId = mesh.geometry.getId();
     this.materialNodeId = mesh.material.getId();
 
-    this.dynamicBuffers = bindDataList.map(this.initDynamicBuffer.bind(this));
+    this.observableBuffers = bindDataList.map(
+      this.initObservableBuffer.bind(this)
+    );
     const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
       bindDataList,
-      this.dynamicBuffers
+      this.observableBuffers
     );
 
     this.bindGroup = bindGroup;
