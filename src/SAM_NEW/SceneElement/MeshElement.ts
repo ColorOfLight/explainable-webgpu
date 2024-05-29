@@ -27,6 +27,10 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
     this.bindGroupLayout = bindGroupLayout;
   }
 
+  protected getWatchItems() {
+    return [];
+  }
+
   getBindDataList(mesh: SAM.Mesh): SAM.BindData<SAM.Mesh>[] {
     return [
       {

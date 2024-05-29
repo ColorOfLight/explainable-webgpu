@@ -35,6 +35,10 @@ export class MaterialElement extends NodeElement<SAM.Material> {
     this.cullMode = "none";
   }
 
+  protected getWatchItems() {
+    return [];
+  }
+
   getBindDataList(material: SAM.Material): SAM.BindData<SAM.Material>[] {
     if (material instanceof SAM.BasicMaterial) {
       return [

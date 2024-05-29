@@ -17,6 +17,13 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
 
     this.nodeId = node.getId();
     this.mediator = new SAM.Mediator(node);
+
+    const watchItems = this.getWatchItems();
+    this.mediator.watchAll(watchItems);
+  }
+
+  protected getWatchItems(): SAM.MediatorWatchItem<keyof N>[] {
+    throw new Error("You must override this method, setMediatorWatchers");
   }
 
   protected initBuffer(bindData: SAM.BindData<N>) {

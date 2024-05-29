@@ -39,6 +39,10 @@ export class GeometryElement extends NodeElement<SAM.Geometry> {
     this.topology = "triangle-list";
   }
 
+  protected getWatchItems() {
+    return [];
+  }
+
   generateVertexBufferData(
     vertexes: SAM.Vertex[],
     vertexBufferLayout: GPUVertexBufferLayout

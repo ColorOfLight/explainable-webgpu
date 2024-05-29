@@ -24,6 +24,10 @@ export class CameraElement<
     this.bindGroupLayout = bindGroupLayout;
   }
 
+  protected getWatchItems(): SAM.MediatorWatchItem<keyof C>[] {
+    return [];
+  }
+
   getBindDataList(camera: C): SAM.BindData<C>[] {
     const viewTransformBindData = {
       label: "viewTransform",
