@@ -38,13 +38,22 @@ export class GeometryElement extends NodeElement<SAM.Geometry> {
     this.observableVertexBuffer = observableVertexBuffer;
     this.observableIndexBuffer = observableIndexBuffer;
 
-    this.indexCount = indexes.length;
     this.vertexBufferLayout = vertexBufferLayout;
-    this.topology = "triangle-list";
+
+    this.setTopology(geometry);
+    this.setIndexCount(geometry);
   }
 
-  protected getWatchItems() {
-    return [];
+  protected getWatchItems(node: SAM.Geometry) {
+    return [
+      {
+        key: "isWireframe" as const,
+        onChange: () => {
+          this.setTopology(node);
+          this.setIndexCount(node);
+        },
+      },
+    ];
   }
 
   generateVertexBufferData(
@@ -95,5 +104,15 @@ export class GeometryElement extends NodeElement<SAM.Geometry> {
 
     indexBufferData.set(indexes);
     return indexBufferData;
+  }
+
+  setTopology(geometry: SAM.Geometry) {
+    this.topology = geometry.isWireframe ? "line-list" : "triangle-list";
+  }
+
+  setIndexCount(geometry: SAM.Geometry) {
+    this.indexCount = geometry.isWireframe
+      ? geometry.getIndexes().length * 2
+      : geometry.getIndexes().length;
   }
 }

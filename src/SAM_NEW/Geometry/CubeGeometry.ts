@@ -1,8 +1,8 @@
 import * as SAM from "@site/src/SAM_NEW";
-import { Geometry } from "./_base";
+import { Geometry, GeometryOptions } from "./_base";
 import { generateCubePlaneVertexes, generatePlaneIndexes } from "./_utils";
 
-export interface CubeGeometryOptions {
+export interface CubeGeometryOptions extends GeometryOptions {
   colors?: {
     front: SAM.Color;
     back: SAM.Color;
@@ -21,9 +21,10 @@ export class CubeGeometry extends Geometry {
     width: number,
     height: number,
     depth: number,
+    label?: string,
     options?: CubeGeometryOptions
   ) {
-    super();
+    super(label ?? "CubeGeometry", options);
 
     const defaultColor = new SAM.Color(1, 1, 1);
 

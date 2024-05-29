@@ -19,11 +19,11 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
     this.nodeId = node.getId();
     this.nodeMediator = new SAM.Mediator(node);
 
-    const watchItems = this.getWatchItems();
+    const watchItems = this.getWatchItems(node);
     this.nodeMediator.watchAll(watchItems);
   }
 
-  protected getWatchItems(): SAM.MediatorWatchItem<keyof N>[] {
+  protected getWatchItems(node: N): SAM.MediatorWatchItem<keyof N>[] {
     throw new Error("You must override this method, setMediatorWatchers");
   }
 
