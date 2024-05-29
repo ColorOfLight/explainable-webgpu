@@ -17,7 +17,7 @@ export class MeshElement extends NodeElement<SAM.Mesh> {
     this.geometryNodeId = mesh.geometry.getId();
     this.materialNodeId = mesh.material.getId();
 
-    this.buffers = bindDataList.map(this.initBuffer.bind(this));
+    this.buffers = bindDataList.map(this.initWatchedBuffer.bind(this));
     const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
       bindDataList,
       this.buffers

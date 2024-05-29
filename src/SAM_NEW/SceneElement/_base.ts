@@ -26,7 +26,7 @@ export class NodeElement<N extends SAM.Node> extends SceneElement {
     throw new Error("You must override this method, setMediatorWatchers");
   }
 
-  protected initBuffer(bindData: SAM.BindData<N>) {
+  protected initWatchedBuffer(bindData: SAM.BindData<N>) {
     if (bindData.data.type === "float32Array") {
       const typedData = bindData.data.getValue();
 

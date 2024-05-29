@@ -14,7 +14,7 @@ export class CameraElement<
 
     const bindDataList = this.getBindDataList(camera);
 
-    this.buffers = bindDataList.map(this.initBuffer.bind(this));
+    this.buffers = bindDataList.map(this.initWatchedBuffer.bind(this));
     const [bindGroupLayout, bindGroup] = this.generateBindGroupSet(
       bindDataList,
       this.buffers
