@@ -1,11 +1,11 @@
 import { useRef, useEffect } from "react";
-import * as SAM from "@site/src/SAM";
+import * as SAM from "@site/src/SAM_NEW";
 
 const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const renderer = new SAM.WebGPURenderer(canvas);
   await renderer.init();
 
-  const scene = new SAM.Scene();
+  const sceneManager = renderer.createSceneManager();
 
   const geometry = new SAM.SimpleTriangleGeometry(0.5);
   const material = new SAM.BasicMaterial();
@@ -13,11 +13,12 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const mesh = new SAM.Mesh(geometry, material);
 
   const camera = new SAM.OrthographicCamera(-1, 1, 1, -1, -2, 2);
-  camera.eye = new SAM.Vector3([0, 0, 1]);
+  camera.eye = new SAM.Vector3(0, 0, 1);
 
-  scene.add(mesh);
+  sceneManager.add(camera);
+  sceneManager.add(mesh);
 
-  renderer.render(scene, camera);
+  renderer.render(sceneManager, camera);
 };
 
 const DrawTriangleScene = () => {
