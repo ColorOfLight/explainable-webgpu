@@ -3,3 +3,4 @@ export * from "./_constants";
 export * from "./_utils";
 
 export * from "./SimpleTriangleGeometry";
+export * from "./CubeGeometry";
