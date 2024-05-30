@@ -55,6 +55,10 @@ export class MaterialElement extends NodeElement<SAM.Material> {
       ];
     }
 
+    if (material instanceof SAM.NormalMaterial) {
+      return [];
+    }
+
     throw new Error("Unsupported material type");
   }
 }
