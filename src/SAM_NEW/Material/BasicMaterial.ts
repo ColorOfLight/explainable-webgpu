@@ -1,7 +1,7 @@
 import * as SAM from "@site/src/SAM_NEW";
 import { Material, MaterialOptions } from "./_base";
 
-import BasicMaterialVertexShader from "../_shaders/BasicMaterial/vertex.wgsl";
+import BaseVertexShader from "../_shaders/baseVertex.wgsl";
 import BasicMaterialFragmentShader from "../_shaders/BasicMaterial/fragment.wgsl";
 
 export interface BasicMaterialOptions extends MaterialOptions {
@@ -16,7 +16,7 @@ export class BasicMaterial extends Material {
     this.color = options?.color ?? new SAM.Color(-1, -1, -1);
 
     this.vertexDescriptor = {
-      code: BasicMaterialVertexShader,
+      code: BaseVertexShader,
       label: "Basic Material Vertex Shader Module",
     };
     this.fragmentDescriptor = {
