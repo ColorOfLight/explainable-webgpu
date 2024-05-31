@@ -12,6 +12,7 @@ export class SceneManager {
   chunks: {
     geometryChunks: Map<Symbol, SAM.GeometryChunk>;
     materialChunks: Map<Symbol, SAM.MaterialChunk>;
+    meshChunks: Map<Symbol, SAM.MeshChunk>;
   };
 
   constructor(device: GPUDevice, canvasFormat: GPUTextureFormat) {
@@ -26,6 +27,7 @@ export class SceneManager {
     this.chunks = {
       geometryChunks: new Map(),
       materialChunks: new Map(),
+      meshChunks: new Map(),
     };
   }
 
@@ -82,6 +84,14 @@ export class SceneManager {
         this.nodeElements.meshElements.set(node.getId(), meshElement);
       } else {
         meshElement = this.nodeElements.meshElements.get(node.getId());
+      }
+
+      let meshChunk: SAM.MeshChunk;
+      if (!this.chunks.meshChunks.has(node.getId())) {
+        meshChunk = new SAM.MeshChunk(node);
+        this.chunks.meshChunks.set(node.getId(), meshChunk);
+      } else {
+        meshChunk = this.chunks.meshChunks.get(node.getId());
       }
 
       return;
