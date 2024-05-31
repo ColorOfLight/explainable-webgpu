@@ -5,12 +5,18 @@ type Handler = {
 
 export class Reactor {
   private reactorHandlerMap: Map<PropertyKey, Handler[]>;
+  private parentReactorHandlers: {
+    reactor: Reactor;
+    key: PropertyKey;
+    handlerLabel: Handler["label"];
+  }[];
 
   constructor() {
     this.reactorHandlerMap = new Map();
+    this.parentReactorHandlers = [];
   }
 
-  registerHandler(key: PropertyKey, onKeyChange: Handler["onChange"]): Symbol {
+  registerHandler(key: PropertyKey, onKeyChange: Handler["onChange"]): symbol {
     const symbol = Symbol(typeof key === "symbol" ? key.toString() : key);
 
     if (!this.reactorHandlerMap.has(key)) {
@@ -25,7 +31,23 @@ export class Reactor {
     return symbol;
   }
 
-  deregisterHandler(key: PropertyKey, symbol: Symbol): void {
+  registerToParentReactor(
+    reactor: Reactor,
+    key: PropertyKey,
+    onKeyChange: Handler["onChange"]
+  ): void {
+    const handlerLabel = reactor.registerHandler(key, onKeyChange);
+    this.parentReactorHandlers.push({ reactor, key, handlerLabel });
+  }
+
+  deregisterParentHandlers(): void {
+    this.parentReactorHandlers.forEach(({ reactor, key, handlerLabel }) => {
+      reactor.deregisterHandler(key, handlerLabel);
+    });
+    this.parentReactorHandlers = [];
+  }
+
+  private deregisterHandler(key: PropertyKey, symbol: Symbol): void {
     const handlers = this.reactorHandlerMap.get(key);
 
     if (handlers == null) {
