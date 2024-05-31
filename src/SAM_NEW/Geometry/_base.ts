@@ -8,9 +8,9 @@ export interface GeometryOptions {
 }
 
 export class Geometry extends SAM.Node {
-  protected vertexes: SAM.Vertex[];
-  protected indexes: number[];
-  protected vertexBufferLayout: GPUVertexBufferLayout;
+  vertexes: SAM.Vertex[];
+  indexes: number[];
+  vertexBufferLayout: GPUVertexBufferLayout;
   isWireframe: boolean;
 
   constructor(options?: GeometryOptions) {
@@ -21,6 +21,8 @@ export class Geometry extends SAM.Node {
     this.vertexBufferLayout = BASE_VERTEX_BUFFER_LAYOUT;
     this.isWireframe = options?.isWireframe ?? false;
   }
+
+  // TODO: remove below functions
 
   getVertexes(): SAM.Vertex[] {
     return this.vertexes;

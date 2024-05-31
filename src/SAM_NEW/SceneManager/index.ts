@@ -9,6 +9,9 @@ export class SceneManager {
     materialElements: Map<Symbol, SAM.MaterialElement>;
     cameraElements: Map<Symbol, SAM.CameraElement>;
   };
+  chunks: {
+    geometryChunks: Map<Symbol, SAM.GeometryChunk>;
+  };
 
   constructor(device: GPUDevice, canvasFormat: GPUTextureFormat) {
     this.device = device;
@@ -19,11 +22,23 @@ export class SceneManager {
       geometryElements: new Map(),
       materialElements: new Map(),
     };
+    this.chunks = {
+      geometryChunks: new Map(),
+    };
   }
 
   add(node: SAM.Node) {
     if (node instanceof SAM.Mesh) {
       const geometry = node.geometry;
+
+      let geometryChunk: SAM.GeometryChunk;
+      if (!this.chunks.geometryChunks.has(geometry.getId())) {
+        geometryChunk = new SAM.GeometryChunk(geometry);
+        this.chunks.geometryChunks.set(geometry.getId(), geometryChunk);
+      } else {
+        geometryChunk = this.chunks.geometryChunks.get(geometry.getId());
+      }
+
       let geometryElement: SAM.GeometryElement;
       if (!this.nodeElements.geometryElements.has(geometry.getId())) {
         geometryElement = new SAM.GeometryElement(this.device, geometry);

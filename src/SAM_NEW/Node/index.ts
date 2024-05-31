@@ -1,10 +1,12 @@
 import * as SAM from "@site/src/SAM_NEW";
 
-export class Node {
+export class Node extends SAM.Reactor {
   private id: Symbol;
   isDestroyed: boolean;
 
   constructor(label: string) {
+    super();
+
     this.setId(label);
     this.isDestroyed = false;
   }
