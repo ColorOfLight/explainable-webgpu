@@ -1,6 +1,7 @@
 // Base
 export * from "./_types";
 export * from "./_utils";
+export * from "./_constants";
 
 // Util Classes
 export * from "./Observable";
@@ -21,6 +22,7 @@ export * from "./Geometry";
 export * from "./Object3D";
 export * from "./Material";
 export * from "./Camera";
+export * from "./Light";
 
 // Elements
 export * from "./SceneElement";
