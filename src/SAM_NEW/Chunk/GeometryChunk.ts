@@ -1,10 +1,15 @@
 import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
 
+interface PipelineData {
+  topology: GPUPrimitiveTopology;
+  vertexBufferLayout: GPUVertexBufferLayout;
+}
+
 export class GeometryChunk extends Chunk {
   vertexData: SAM.SingleDataReactor<Float32Array>;
   indexData: SAM.SingleDataReactor<Uint16Array>;
-  pipelineData: SAM.SingleDataReactor<Record<string, string>>;
+  pipelineData: SAM.SingleDataReactor<PipelineData>;
   indexCountData: SAM.SingleDataReactor<number>;
 
   constructor(geometry: SAM.Geometry) {
@@ -31,11 +36,16 @@ export class GeometryChunk extends Chunk {
     this.pipelineData = new SAM.SingleDataReactor(
       () => ({
         topology: this.getTopology(geometry),
+        vertexBufferLayout: geometry.vertexBufferLayout,
       }),
       [
         {
           reactor: geometry,
           key: "isWireframe",
+        },
+        {
+          reactor: geometry,
+          key: "vertexBufferLayout",
         },
       ]
     );
