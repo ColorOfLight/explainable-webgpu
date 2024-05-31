@@ -1,24 +1,35 @@
 import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
-import { BindData } from "./_type";
 
 export class MaterialChunk extends Chunk {
-  bindDataList: SAM.SingleDataReactor<BindData>[];
-  layoutEntryDataList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
+  bufferDataReactorList: SAM.SingleDataReactor<SAM.BufferData>[];
+  layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
+  vertexDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
+  fragmentDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
 
   constructor(material: SAM.Material) {
     super();
 
-    this.bindDataList = this.getBindDataList(material);
-    this.layoutEntryDataList = this.getLayoutEntryDataList(material);
+    this.bufferDataReactorList = this.getBufferDataList(material);
+    this.layoutEntryDataReactorList = this.getLayoutEntryDataList(material);
+    this.vertexDescriptorReactor = new SAM.SingleDataReactor(
+      () => material.vertexDescriptor,
+      [{ reactor: material, key: "vertexDescriptor" }]
+    );
+    this.fragmentDescriptorReactor = new SAM.SingleDataReactor(
+      () => material.fragmentDescriptor,
+      [{ reactor: material, key: "fragmentDescriptor" }]
+    );
   }
 
-  getBindDataList(material: SAM.Material): SAM.SingleDataReactor<BindData>[] {
+  getBufferDataList(
+    material: SAM.Material
+  ): SAM.SingleDataReactor<SAM.BufferData>[] {
     if (material instanceof SAM.BasicMaterial) {
       return [
         new SAM.SingleDataReactor(
           () => ({
-            type: "typed-array",
+            type: "uniform-typed-array",
             value: material.color.toTypedArray(),
           }),
           [

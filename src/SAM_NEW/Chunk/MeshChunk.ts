@@ -1,23 +1,22 @@
 import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
-import { BindData } from "./_type";
 
 export class MeshChunk extends Chunk {
-  bindDataList: SAM.SingleDataReactor<BindData>[];
-  layoutEntryDataList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
+  bufferDataReactorList: SAM.SingleDataReactor<SAM.BufferData>[];
+  layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
 
   constructor(mesh: SAM.Mesh) {
     super();
 
-    this.bindDataList = this.getBindDataList(mesh);
-    this.layoutEntryDataList = this.getLayoutEntryDataList();
+    this.bufferDataReactorList = this.getBufferDataList(mesh);
+    this.layoutEntryDataReactorList = this.getLayoutEntryDataList();
   }
 
-  getBindDataList(mesh: SAM.Mesh): SAM.SingleDataReactor<BindData>[] {
+  getBufferDataList(mesh: SAM.Mesh): SAM.SingleDataReactor<SAM.BufferData>[] {
     return [
       new SAM.SingleDataReactor(
         () => ({
-          type: "typed-array",
+          type: "uniform-typed-array",
           value: new Float32Array(mesh.transformMatrix.toRenderingData()),
         }),
         [

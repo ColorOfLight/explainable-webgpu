@@ -1,7 +1,5 @@
 import * as SAM from "@site/src/SAM_NEW";
 
-export type BufferData = Float32Array | Uint16Array | Uint32Array;
-
 export type BufferDataRecord = Record<string, BufferData>;
 
 export interface Vertex {
@@ -39,8 +37,22 @@ type BindDataList = [
   // },
 ];
 
-export interface BindData<N extends SAM.Node> {
-  label: string;
-  data: BindDataList[number];
-  watchKeys?: (keyof N)[];
-}
+// export interface BindData<N extends SAM.Node> {
+//   label: string;
+//   data: BindDataList[number];
+//   watchKeys?: (keyof N)[];
+// }
+
+export type BufferData =
+  | {
+      type: "uniform-typed-array";
+      value: Float32Array | Uint32Array | Int32Array;
+    }
+  | {
+      type: "vertex";
+      value: Float32Array;
+    }
+  | {
+      type: "index";
+      value: Uint16Array;
+    };

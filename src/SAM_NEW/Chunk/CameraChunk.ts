@@ -1,19 +1,20 @@
 import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
-import { BindData } from "./_type";
 
 export class CameraChunk extends Chunk {
-  bindDataList: SAM.SingleDataReactor<BindData>[];
-  layoutEntryDataList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
+  bufferDataReactorList: SAM.SingleDataReactor<SAM.BufferData>[];
+  layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
 
   constructor(camera: SAM.Camera) {
     super();
 
-    this.bindDataList = this.getBindDataList(camera);
-    this.layoutEntryDataList = this.getLayoutEntryDataList();
+    this.bufferDataReactorList = this.getBufferDataList(camera);
+    this.layoutEntryDataReactorList = this.getLayoutEntryDataList();
   }
 
-  getBindDataList(camera: SAM.Camera): SAM.SingleDataReactor<BindData>[] {
+  getBufferDataList(
+    camera: SAM.Camera
+  ): SAM.SingleDataReactor<SAM.BufferData>[] {
     let projMatrixReactorKeys = [];
     if (camera instanceof SAM.PerspectiveCamera) {
       projMatrixReactorKeys = ["aspect", "fov", "near", "far"];
@@ -25,7 +26,7 @@ export class CameraChunk extends Chunk {
     return [
       new SAM.SingleDataReactor(
         () => ({
-          type: "typed-array",
+          type: "uniform-typed-array",
           value: new Float32Array(
             camera.getViewTransformMatrix().toRenderingData()
           ),
@@ -47,7 +48,7 @@ export class CameraChunk extends Chunk {
       ),
       new SAM.SingleDataReactor(
         () => ({
-          type: "typed-array",
+          type: "uniform-typed-array",
           value: new Float32Array(
             camera.getProjTransformMatrix().toRenderingData()
           ),
@@ -59,7 +60,7 @@ export class CameraChunk extends Chunk {
       ),
       new SAM.SingleDataReactor(
         () => ({
-          type: "typed-array",
+          type: "uniform-typed-array",
           value: camera.eye.toTypedArray(),
         }),
         [

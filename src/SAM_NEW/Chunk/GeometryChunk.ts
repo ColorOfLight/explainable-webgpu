@@ -7,16 +7,16 @@ interface PipelineData {
 }
 
 export class GeometryChunk extends Chunk {
-  vertexData: SAM.SingleDataReactor<Float32Array>;
-  indexData: SAM.SingleDataReactor<Uint16Array>;
-  pipelineData: SAM.SingleDataReactor<PipelineData>;
-  indexCountData: SAM.SingleDataReactor<number>;
+  vertexDataReactor: SAM.SingleDataReactor<SAM.BufferData>;
+  indexDataReactor: SAM.SingleDataReactor<SAM.BufferData>;
+  pipelineDataReactor: SAM.SingleDataReactor<PipelineData>;
+  indexCountDataReactor: SAM.SingleDataReactor<number>;
 
   constructor(geometry: SAM.Geometry) {
     super();
 
-    this.vertexData = new SAM.SingleDataReactor(
-      () => this.generateVertexData(geometry),
+    this.vertexDataReactor = new SAM.SingleDataReactor(
+      () => ({ type: "vertex", value: this.generateVertexData(geometry) }),
       [
         {
           reactor: geometry,
@@ -24,8 +24,8 @@ export class GeometryChunk extends Chunk {
         },
       ]
     );
-    this.indexData = new SAM.SingleDataReactor(
-      () => this.getIndexData(geometry),
+    this.indexDataReactor = new SAM.SingleDataReactor(
+      () => ({ type: "index", value: this.getIndexData(geometry) }),
       [
         {
           reactor: geometry,
@@ -33,7 +33,7 @@ export class GeometryChunk extends Chunk {
         },
       ]
     );
-    this.pipelineData = new SAM.SingleDataReactor(
+    this.pipelineDataReactor = new SAM.SingleDataReactor(
       () => ({
         topology: this.getTopology(geometry),
         vertexBufferLayout: geometry.vertexBufferLayout,
@@ -49,7 +49,7 @@ export class GeometryChunk extends Chunk {
         },
       ]
     );
-    this.indexCountData = new SAM.SingleDataReactor(
+    this.indexCountDataReactor = new SAM.SingleDataReactor(
       () => this.getIndexCount(geometry),
       [
         {
