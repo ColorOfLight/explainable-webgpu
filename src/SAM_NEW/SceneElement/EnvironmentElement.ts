@@ -1,10 +1,12 @@
 import * as SAM from "@site/src/SAM_NEW";
 import { SceneElement } from "./_base";
-import { createBindGroupLayout, createBindGroup } from "./_utils";
+import { createBindGroup } from "./_utils";
 
-export interface EnvironmentElementUpdateOptions {
-  lightChunks: SAM.LightChunk[];
-}
+const AMBIENT_LIGHT_SIZE = 3 + 1; /* color(3) + intensity(1) */
+const DIRECTIONAL_LIGHT_SIZE =
+  3 + 1 + 3 + 1; /* color(3) + intensity(1) + direction(3) + pad(1) */
+const POINT_LIGHT_SIZE =
+  3 + 1 + 3 + 1; /* color(3) + intensity(1) + position(3) + decay(1) */
 
 export class EnvironmentElement extends SceneElement {
   ambientLightsBufferReactor: SAM.GPUBufferReactor;
@@ -18,20 +20,17 @@ export class EnvironmentElement extends SceneElement {
 
     this.ambientLightsBufferReactor = this.generateBufferReactor(
       device,
-      /* color(3) + intensity(1) */
-      Array((3 + 1) * SAM.MAX_AMBIENT_LIGHTS_DEFAULT).fill(0)
+      Array(AMBIENT_LIGHT_SIZE * SAM.MAX_AMBIENT_LIGHTS_DEFAULT).fill(0)
     );
 
     this.directionalLightsBufferReactor = this.generateBufferReactor(
       device,
-      /* color(3) + intensity(1) + direction(3) + pad(1) */
-      Array((3 + 1 + 3 + 1) * SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT).fill(0)
+      Array(DIRECTIONAL_LIGHT_SIZE * SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT).fill(0)
     );
 
     this.pointLightsBufferReactor = this.generateBufferReactor(
       device,
-      /* color(3) + intensity(1) + position(3) + decay(1) */
-      Array((3 + 1 + 3 + 1) * SAM.MAX_POINT_LIGHTS_DEFAULT).fill(0)
+      Array(POINT_LIGHT_SIZE * SAM.MAX_POINT_LIGHTS_DEFAULT).fill(0)
     );
 
     this.bindGroupLayoutReactor = new SAM.SingleDataReactor(() => {
@@ -97,44 +96,86 @@ export class EnvironmentElement extends SceneElement {
     );
   }
 
-  update(options: EnvironmentElementUpdateOptions) {
-    const ambientLightChunks = options.lightChunks.filter(
+  updateLights(lightChunks: SAM.LightChunk[]) {
+    const ambientLightChunks = lightChunks.filter(
       (chunk) => chunk.lightType === "ambient"
     );
-    // const directionalLightChunks = options.lightChunks.filter(
-    //   (chunk) => chunk.lightType === "directional"
-    // );
-    // const pointLightChunks = options.lightChunks.filter(
-    //   (chunk) => chunk.lightType === "point"
-    // );
+    const directionalLightChunks = lightChunks.filter(
+      (chunk) => chunk.lightType === "directional"
+    );
+    const pointLightChunks = lightChunks.filter(
+      (chunk) => chunk.lightType === "point"
+    );
 
     if (ambientLightChunks.length > SAM.MAX_AMBIENT_LIGHTS_DEFAULT) {
       throw new Error("Too many ambient lights");
     }
 
-    if (ambientLightChunks.length > 0) {
-      this.ambientLightsBufferReactor.resetBuffer(
-        this.device,
-        () => {
-          const newData = new Float32Array(
-            SAM.MAX_AMBIENT_LIGHTS_DEFAULT * (3 + 1)
-          );
-          ambientLightChunks.forEach((chunk, index) => {
-            const offset = index * (3 + 1);
-            newData.set(chunk.bufferDataReactor.data.value, offset);
-          });
+    if (directionalLightChunks.length > SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT) {
+      throw new Error("Too many directional lights");
+    }
 
-          return {
-            type: "uniform-typed-array",
-            value: newData,
-          };
-        },
-        ambientLightChunks.map((chunk) => ({
-          reactor: chunk.bufferDataReactor,
-          key: "data",
-        }))
+    if (pointLightChunks.length > SAM.MAX_POINT_LIGHTS_DEFAULT) {
+      throw new Error("Too many point lights");
+    }
+
+    if (ambientLightChunks.length > 0) {
+      this.updateEachLightChunks(
+        this.device,
+        ambientLightChunks,
+        this.ambientLightsBufferReactor,
+        AMBIENT_LIGHT_SIZE,
+        SAM.MAX_AMBIENT_LIGHTS_DEFAULT
       );
     }
+
+    if (directionalLightChunks.length > 0) {
+      this.updateEachLightChunks(
+        this.device,
+        directionalLightChunks,
+        this.directionalLightsBufferReactor,
+        DIRECTIONAL_LIGHT_SIZE,
+        SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT
+      );
+    }
+
+    if (pointLightChunks.length > 0) {
+      this.updateEachLightChunks(
+        this.device,
+        pointLightChunks,
+        this.pointLightsBufferReactor,
+        POINT_LIGHT_SIZE,
+        SAM.MAX_POINT_LIGHTS_DEFAULT
+      );
+    }
+  }
+
+  private updateEachLightChunks(
+    device: GPUDevice,
+    lightChunks: SAM.LightChunk[],
+    gpuBufferReactor: SAM.GPUBufferReactor,
+    bufferSize: number,
+    maxLightCount: number
+  ) {
+    gpuBufferReactor.resetBuffer(
+      device,
+      () => {
+        const newData = new Float32Array(maxLightCount * bufferSize);
+        lightChunks.forEach((chunk, index) => {
+          const offset = index * bufferSize;
+          newData.set(chunk.bufferDataReactor.data.value, offset);
+        });
+
+        return {
+          type: "uniform-typed-array",
+          value: newData,
+        };
+      },
+      lightChunks.map((chunk) => ({
+        reactor: chunk.bufferDataReactor,
+        key: "data",
+      }))
+    );
   }
 
   private generateBufferReactor(

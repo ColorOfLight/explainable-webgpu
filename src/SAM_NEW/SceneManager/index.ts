@@ -131,9 +131,7 @@ export class SceneManager {
       }
 
       const lightChunks = Array.from(this.chunks.lightChunks.values());
-      this.sceneElements.environmentElement.update({
-        lightChunks,
-      });
+      this.sceneElements.environmentElement.updateLights(lightChunks);
       return;
     }
 
