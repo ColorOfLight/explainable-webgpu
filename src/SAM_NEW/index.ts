@@ -14,6 +14,7 @@ export * from "./Matrix";
 export * from "./Mediator";
 export * from "./Coordinate";
 export * from "./Chunk";
+export * from "./Texture";
 
 // Controls
 export * from "./Control";
