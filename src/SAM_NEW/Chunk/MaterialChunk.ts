@@ -2,7 +2,7 @@ import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
 
 export class MaterialChunk extends Chunk {
-  bufferDataReactorList: SAM.SingleDataReactor<SAM.BufferData>[];
+  precursorReactorList: SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[];
   layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
   vertexDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
   fragmentDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
@@ -10,7 +10,7 @@ export class MaterialChunk extends Chunk {
   constructor(material: SAM.Material) {
     super();
 
-    this.bufferDataReactorList = this.getBufferDataList(material);
+    this.precursorReactorList = this.getPrecursorList(material);
     this.layoutEntryDataReactorList = this.getLayoutEntryDataList(material);
     this.vertexDescriptorReactor = new SAM.SingleDataReactor(
       () => material.vertexDescriptor,
@@ -22,9 +22,9 @@ export class MaterialChunk extends Chunk {
     );
   }
 
-  getBufferDataList(
+  getPrecursorList(
     material: SAM.Material
-  ): SAM.SingleDataReactor<SAM.BufferData>[] {
+  ): SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[] {
     if (
       material instanceof SAM.BasicMaterial ||
       material instanceof SAM.SimpleStandardMaterial

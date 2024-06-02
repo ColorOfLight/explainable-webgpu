@@ -2,19 +2,19 @@ import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
 
 export class CameraChunk extends Chunk {
-  bufferDataReactorList: SAM.SingleDataReactor<SAM.BufferData>[];
+  precursorReactorList: SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[];
   layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
 
   constructor(camera: SAM.Camera) {
     super();
 
-    this.bufferDataReactorList = this.getBufferDataList(camera);
+    this.precursorReactorList = this.getPrecursorList(camera);
     this.layoutEntryDataReactorList = this.getLayoutEntryDataList();
   }
 
-  getBufferDataList(
+  getPrecursorList(
     camera: SAM.Camera
-  ): SAM.SingleDataReactor<SAM.BufferData>[] {
+  ): SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[] {
     let projMatrixReactorKeys = [];
     if (camera instanceof SAM.PerspectiveCamera) {
       projMatrixReactorKeys = ["aspect", "fov", "near", "far"];

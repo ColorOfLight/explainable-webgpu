@@ -9,26 +9,26 @@ const POINT_LIGHT_SIZE =
   3 + 1 + 3 + 1; /* color(3) + intensity(1) + position(3) + decay(1) */
 
 export class EnvironmentElement extends SceneElement {
-  ambientLightsBufferReactor: SAM.GPUBufferReactor;
-  directionalLightsBufferReactor: SAM.GPUBufferReactor;
-  pointLightsBufferReactor: SAM.GPUBufferReactor;
+  ambientLightsResourceReactor: SAM.NumbersResourceReactor;
+  directionalLightsResourceReactor: SAM.NumbersResourceReactor;
+  pointLightsResourceReactor: SAM.NumbersResourceReactor;
   bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
   bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
 
   constructor(device: GPUDevice) {
     super(device);
 
-    this.ambientLightsBufferReactor = this.generateBufferReactor(
+    this.ambientLightsResourceReactor = this.generateResourceReactor(
       device,
       Array(AMBIENT_LIGHT_SIZE * SAM.MAX_AMBIENT_LIGHTS_DEFAULT).fill(0)
     );
 
-    this.directionalLightsBufferReactor = this.generateBufferReactor(
+    this.directionalLightsResourceReactor = this.generateResourceReactor(
       device,
       Array(DIRECTIONAL_LIGHT_SIZE * SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT).fill(0)
     );
 
-    this.pointLightsBufferReactor = this.generateBufferReactor(
+    this.pointLightsResourceReactor = this.generateResourceReactor(
       device,
       Array(POINT_LIGHT_SIZE * SAM.MAX_POINT_LIGHTS_DEFAULT).fill(0)
     );
@@ -69,9 +69,9 @@ export class EnvironmentElement extends SceneElement {
         createBindGroup(
           device,
           [
-            this.ambientLightsBufferReactor,
-            this.directionalLightsBufferReactor,
-            this.pointLightsBufferReactor,
+            this.ambientLightsResourceReactor,
+            this.directionalLightsResourceReactor,
+            this.pointLightsResourceReactor,
           ],
           this.bindGroupLayoutReactor
         ),
@@ -81,16 +81,16 @@ export class EnvironmentElement extends SceneElement {
           key: "data",
         },
         {
-          reactor: this.ambientLightsBufferReactor,
-          key: "buffer",
+          reactor: this.ambientLightsResourceReactor,
+          key: "resource",
         },
         {
-          reactor: this.directionalLightsBufferReactor,
-          key: "buffer",
+          reactor: this.directionalLightsResourceReactor,
+          key: "resource",
         },
         {
-          reactor: this.pointLightsBufferReactor,
-          key: "buffer",
+          reactor: this.pointLightsResourceReactor,
+          key: "resource",
         },
       ]
     );
@@ -123,7 +123,7 @@ export class EnvironmentElement extends SceneElement {
       this.updateEachLightChunks(
         this.device,
         ambientLightChunks,
-        this.ambientLightsBufferReactor,
+        this.ambientLightsResourceReactor,
         AMBIENT_LIGHT_SIZE,
         SAM.MAX_AMBIENT_LIGHTS_DEFAULT
       );
@@ -133,7 +133,7 @@ export class EnvironmentElement extends SceneElement {
       this.updateEachLightChunks(
         this.device,
         directionalLightChunks,
-        this.directionalLightsBufferReactor,
+        this.directionalLightsResourceReactor,
         DIRECTIONAL_LIGHT_SIZE,
         SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT
       );
@@ -143,7 +143,7 @@ export class EnvironmentElement extends SceneElement {
       this.updateEachLightChunks(
         this.device,
         pointLightChunks,
-        this.pointLightsBufferReactor,
+        this.pointLightsResourceReactor,
         POINT_LIGHT_SIZE,
         SAM.MAX_POINT_LIGHTS_DEFAULT
       );
@@ -153,17 +153,21 @@ export class EnvironmentElement extends SceneElement {
   private updateEachLightChunks(
     device: GPUDevice,
     lightChunks: SAM.LightChunk[],
-    gpuBufferReactor: SAM.GPUBufferReactor,
+    resourceReactor: SAM.NumbersResourceReactor,
     bufferSize: number,
     maxLightCount: number
   ) {
-    gpuBufferReactor.resetBuffer(
+    resourceReactor.resetResource(
       device,
       () => {
         const newData = new Float32Array(maxLightCount * bufferSize);
         lightChunks.forEach((chunk, index) => {
+          if (chunk.precursorReactor.data.type !== "uniform-typed-array") {
+            throw new Error("Invalid light precursor data type");
+          }
+
           const offset = index * bufferSize;
-          newData.set(chunk.bufferDataReactor.data.value, offset);
+          newData.set(chunk.precursorReactor.data.value, offset);
         });
 
         return {
@@ -172,17 +176,17 @@ export class EnvironmentElement extends SceneElement {
         };
       },
       lightChunks.map((chunk) => ({
-        reactor: chunk.bufferDataReactor,
+        reactor: chunk.precursorReactor,
         key: "data",
       }))
     );
   }
 
-  private generateBufferReactor(
+  private generateResourceReactor(
     device: GPUDevice,
     data: number[]
-  ): SAM.GPUBufferReactor {
-    return new SAM.GPUBufferReactor(
+  ): SAM.NumbersResourceReactor {
+    return new SAM.NumbersResourceReactor(
       device,
       () => ({
         type: "uniform-typed-array",

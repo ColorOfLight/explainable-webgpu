@@ -2,9 +2,10 @@ import * as SAM from "@site/src/SAM_NEW";
 
 import { SceneElement } from "./_base";
 import { createBindGroup, createBindGroupLayout } from "./_utils";
+import { RESOURCE_CLASS_MAP } from "./_constants";
 
 export class MaterialElement extends SceneElement {
-  bindBufferReactors: SAM.GPUBufferReactor[];
+  bindResourceReactors: SAM.BindResourceReactor[];
   bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
   bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
   vertexShaderModuleReactor: SAM.SingleDataReactor<GPUShaderModule>;
@@ -13,14 +14,14 @@ export class MaterialElement extends SceneElement {
   constructor(device: GPUDevice, materialChunk: SAM.MaterialChunk) {
     super(device);
 
-    this.bindBufferReactors = [];
-    materialChunk.bufferDataReactorList.forEach((bufferDataReactor) => {
-      const bufferReactor = new SAM.GPUBufferReactor(
-        device,
-        () => bufferDataReactor.data,
-        [{ reactor: bufferDataReactor, key: "data" }]
-      );
-      this.bindBufferReactors.push(bufferReactor);
+    this.bindResourceReactors = [];
+    materialChunk.precursorReactorList.forEach((precursorReactor) => {
+      const bindResourceReactor = new RESOURCE_CLASS_MAP[
+        precursorReactor.data.type
+      ](device, () => precursorReactor.data, [
+        { reactor: precursorReactor, key: "data" },
+      ]);
+      this.bindResourceReactors.push(bindResourceReactor);
     });
 
     this.bindGroupLayoutReactor = new SAM.SingleDataReactor(
@@ -38,13 +39,13 @@ export class MaterialElement extends SceneElement {
       () =>
         createBindGroup(
           device,
-          this.bindBufferReactors,
+          this.bindResourceReactors,
           this.bindGroupLayoutReactor
         ),
       [
-        ...this.bindBufferReactors.map((bufferReactor) => ({
-          reactor: bufferReactor,
-          key: "buffer",
+        ...this.bindResourceReactors.map((resourceReactor) => ({
+          reactor: resourceReactor,
+          key: "resource",
         })),
         {
           reactor: this.bindGroupLayoutReactor,

@@ -2,9 +2,10 @@ import * as SAM from "@site/src/SAM_NEW";
 
 import { SceneElement } from "./_base";
 import { createBindGroup, createBindGroupLayout } from "./_utils";
+import { RESOURCE_CLASS_MAP } from "./_constants";
 
 export class MeshElement extends SceneElement {
-  bindBufferReactors: SAM.GPUBufferReactor[];
+  bindResourceReactors: SAM.BindResourceReactor[];
   bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
   bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
   geometryNodeIdReactor: SAM.SingleDataReactor<Symbol>;
@@ -13,14 +14,14 @@ export class MeshElement extends SceneElement {
   constructor(device: GPUDevice, meshChunk: SAM.MeshChunk) {
     super(device);
 
-    this.bindBufferReactors = [];
-    meshChunk.bufferDataReactorList.forEach((bufferDataReactor) => {
-      const bufferReactor = new SAM.GPUBufferReactor(
+    this.bindResourceReactors = [];
+    meshChunk.precursorReactorList.forEach((precursorReactor) => {
+      const bufferReactor = new RESOURCE_CLASS_MAP[precursorReactor.data.type](
         device,
-        () => bufferDataReactor.data,
-        [{ reactor: bufferDataReactor, key: "data" }]
+        () => precursorReactor.data,
+        [{ reactor: precursorReactor, key: "data" }]
       );
-      this.bindBufferReactors.push(bufferReactor);
+      this.bindResourceReactors.push(bufferReactor);
     });
 
     this.bindGroupLayoutReactor = new SAM.SingleDataReactor(
@@ -35,12 +36,12 @@ export class MeshElement extends SceneElement {
       () =>
         createBindGroup(
           device,
-          this.bindBufferReactors,
+          this.bindResourceReactors,
           this.bindGroupLayoutReactor
         ),
       [
-        ...this.bindBufferReactors.map((bufferReactor) => ({
-          reactor: bufferReactor,
+        ...this.bindResourceReactors.map((resourceReactor) => ({
+          reactor: resourceReactor,
           key: "buffer",
         })),
         {

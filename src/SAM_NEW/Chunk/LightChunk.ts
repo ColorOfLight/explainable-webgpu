@@ -2,17 +2,19 @@ import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
 
 export class LightChunk extends Chunk {
-  bufferDataReactor: SAM.SingleDataReactor<SAM.BufferData>;
+  precursorReactor: SAM.SingleDataReactor<SAM.BindingResourcePrecursor>;
   lightType: SAM.LightType;
 
   constructor(light: SAM.Light) {
     super();
 
-    this.bufferDataReactor = this.getBindData(light);
+    this.precursorReactor = this.getBindData(light);
     this.lightType = this.getLightType(light);
   }
 
-  private getBindData(light: SAM.Light): SAM.SingleDataReactor<SAM.BufferData> {
+  private getBindData(
+    light: SAM.Light
+  ): SAM.SingleDataReactor<SAM.BindingResourcePrecursor> {
     if (light instanceof SAM.AmbientLight) {
       return new SAM.SingleDataReactor(
         () => ({

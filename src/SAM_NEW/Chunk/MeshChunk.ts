@@ -2,7 +2,7 @@ import * as SAM from "@site/src/SAM_NEW";
 import { Chunk } from "./_base";
 
 export class MeshChunk extends Chunk {
-  bufferDataReactorList: SAM.SingleDataReactor<SAM.BufferData>[];
+  precursorReactorList: SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[];
   layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
   geometryNodeIdReactor: SAM.SingleDataReactor<Symbol>;
   materialNodeIdReactor: SAM.SingleDataReactor<Symbol>;
@@ -10,7 +10,7 @@ export class MeshChunk extends Chunk {
   constructor(mesh: SAM.Mesh) {
     super();
 
-    this.bufferDataReactorList = this.getBufferDataList(mesh);
+    this.precursorReactorList = this.getPrecursorList(mesh);
     this.layoutEntryDataReactorList = this.getLayoutEntryDataList();
 
     this.geometryNodeIdReactor = new SAM.SingleDataReactor(
@@ -24,7 +24,9 @@ export class MeshChunk extends Chunk {
     );
   }
 
-  getBufferDataList(mesh: SAM.Mesh): SAM.SingleDataReactor<SAM.BufferData>[] {
+  getPrecursorList(
+    mesh: SAM.Mesh
+  ): SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[] {
     return [
       new SAM.SingleDataReactor(
         () => ({

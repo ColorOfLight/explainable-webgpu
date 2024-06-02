@@ -13,16 +13,14 @@ export function createBindGroupLayout(
 
 export function createBindGroup(
   device: GPUDevice,
-  bindBufferReactors: SAM.GPUBufferReactor[],
+  resourceReactors: SAM.BindResourceReactor[],
   bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>
 ) {
   return device.createBindGroup({
     layout: bindGroupLayoutReactor.data,
-    entries: bindBufferReactors.map((bufferReactor, index) => ({
+    entries: resourceReactors.map((resourceReactor, index) => ({
       binding: index,
-      resource: {
-        buffer: bufferReactor.buffer,
-      },
+      resource: resourceReactor.resource,
     })),
   });
 }
