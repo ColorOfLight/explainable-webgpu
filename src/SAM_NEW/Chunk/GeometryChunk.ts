@@ -7,8 +7,8 @@ interface PipelineData {
 }
 
 export class GeometryChunk extends Chunk {
-  vertexDataReactor: SAM.SingleDataReactor<SAM.BufferData>;
-  indexDataReactor: SAM.SingleDataReactor<SAM.BufferData>;
+  vertexDataReactor: SAM.SingleDataReactor<SAM.NumbersResourcePrecursor>;
+  indexDataReactor: SAM.SingleDataReactor<SAM.NumbersResourcePrecursor>;
   pipelineDataReactor: SAM.SingleDataReactor<PipelineData>;
   indexCountDataReactor: SAM.SingleDataReactor<number>;
 

@@ -11,8 +11,8 @@ export class RenderSequence {
     pipelineElement: SAM.PipelineElement,
     environmentElement: SAM.EnvironmentElement
   ) {
-    const vertexBuffer = geometryElement.vertexBufferReactor.buffer;
-    const indexBuffer = geometryElement.indexBufferReactor.buffer;
+    const vertexBuffer = geometryElement.vertexResourceReactor.resource.buffer;
+    const indexBuffer = geometryElement.indexResourceReactor.resource.buffer;
     const indexCount = geometryElement.indexCountReactor.data;
     const meshBindGroup = meshElement.bindGroupReactor.data;
     const materialBindGroup = materialElement.bindGroupReactor.data;
