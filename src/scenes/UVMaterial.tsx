@@ -1,11 +1,11 @@
 import { useRef, useEffect } from "react";
-import * as SAM from "@site/src/SAM";
+import * as SAM from "@site/src/SAM_NEW";
 
 const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const renderer = new SAM.WebGPURenderer(canvas);
   await renderer.init();
 
-  const scene = new SAM.Scene();
+  const sceneManager = renderer.createSceneManager();
 
   const material = new SAM.UVMaterial({
     pattern: "gradient",
@@ -19,16 +19,16 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const sphere = new SAM.Mesh(sphereGeometry, material);
   const plane = new SAM.Mesh(planeGeometry, material);
 
-  cube.setTranslate(new SAM.Vector3([-0.5, -0.5, 0]));
-  sphere.setTranslate(new SAM.Vector3([0, 0.5, 0]));
-  plane.setTranslate(new SAM.Vector3([0.5, -0.5, 0]));
+  cube.setTranslate(new SAM.Vector3(-0.5, -0.5, 0));
+  sphere.setTranslate(new SAM.Vector3(0, 0.5, 0));
+  plane.setTranslate(new SAM.Vector3(0.5, -0.5, 0));
 
-  scene.add(cube);
-  scene.add(sphere);
-  scene.add(plane);
+  sceneManager.add(cube);
+  sceneManager.add(sphere);
+  sceneManager.add(plane);
 
-  const light1 = new SAM.AmbientLight(new SAM.Color([1, 1, 1]), 1);
-  scene.add(light1);
+  const light1 = new SAM.AmbientLight(new SAM.Color(1, 1, 1), 1);
+  sceneManager.add(light1);
 
   const camera = new SAM.PerspectiveCamera(
     Math.PI / 2,
@@ -37,7 +37,9 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     100
   );
 
-  camera.eye = new SAM.Vector3([0, 0, 1.5]);
+  camera.eye = new SAM.Vector3(0, 0, 1.5);
+
+  sceneManager.add(camera);
 
   const orbitalControl = new SAM.OrbitalControl(canvas);
   orbitalControl.attachTo(camera);
@@ -50,7 +52,7 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     sphere.setRotateY(0.01);
     plane.setRotateY(0.01);
 
-    renderer.render(scene, camera);
+    renderer.render(sceneManager, camera);
   });
 };
 
