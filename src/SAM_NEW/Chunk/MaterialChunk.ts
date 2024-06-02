@@ -84,6 +84,28 @@ export class MaterialChunk extends Chunk {
       ];
     }
 
+    if (material instanceof SAM.UVMaterial) {
+      const patternIndex = SAM.UV_MATERIAL_PATTERNS.indexOf(material.pattern);
+      if (patternIndex === -1) {
+        throw new Error("Invalid UVMaterial pattern");
+      }
+
+      return [
+        new SAM.SingleDataReactor(
+          () => ({
+            type: "uniform-typed-array",
+            value: new Float32Array([patternIndex]),
+          }),
+          [
+            {
+              reactor: material,
+              key: "pattern",
+            },
+          ]
+        ),
+      ];
+    }
+
     throw new Error("Unsupported material type");
   }
 
@@ -92,7 +114,9 @@ export class MaterialChunk extends Chunk {
   ): SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[] {
     if (
       material instanceof SAM.BasicMaterial ||
-      material instanceof SAM.SimpleStandardMaterial
+      material instanceof SAM.SimpleStandardMaterial ||
+      material instanceof SAM.PhongMaterial ||
+      material instanceof SAM.UVMaterial
     ) {
       return [
         new SAM.SingleDataReactor(() => ({
@@ -107,18 +131,6 @@ export class MaterialChunk extends Chunk {
 
     if (material instanceof SAM.NormalMaterial) {
       return [];
-    }
-
-    if (material instanceof SAM.PhongMaterial) {
-      return [
-        new SAM.SingleDataReactor(() => ({
-          binding: 0,
-          visibility: GPUShaderStage.FRAGMENT,
-          buffer: {
-            type: "uniform",
-          },
-        })),
-      ];
     }
 
     throw new Error("Unsupported material type");
