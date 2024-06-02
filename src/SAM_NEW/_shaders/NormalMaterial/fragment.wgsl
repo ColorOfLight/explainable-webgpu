@@ -1,5 +1,5 @@
 struct FragmentInput {
-  @location(0) normal: vec3f,
+  @location(1) normal: vec3f,
 };
 
 @fragment
