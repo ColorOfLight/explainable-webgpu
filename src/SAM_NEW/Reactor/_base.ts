@@ -62,7 +62,7 @@ export class Reactor {
       throw new Error("No handler registered with that symbol");
     }
 
-    delete handlers[handlerIndex];
+    this.parentReactorHandlers.splice(handlerIndex, 1);
   }
 
   private registerKeyDispatcher(key: PropertyKey) {
