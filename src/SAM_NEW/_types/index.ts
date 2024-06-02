@@ -1,7 +1,5 @@
 import * as SAM from "@site/src/SAM_NEW";
 
-export type BufferDataRecord = Record<string, BufferData>;
-
 export interface Vertex {
   position: [number, number, number]; // xyz
   normal: [number, number, number]; // xyz
@@ -41,8 +39,5 @@ export type BindingResourcePrecursor =
   | NumbersResourcePrecursor
   | ImageResourcePrecursor
   | SamplerResourcePrecursor;
-
-// TODO: remove
-export type BufferData = BindingResourcePrecursor;
 
 export type LightType = "ambient" | "directional" | "point";
