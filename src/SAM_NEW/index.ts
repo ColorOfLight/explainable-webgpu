@@ -4,14 +4,12 @@ export * from "./_utils";
 export * from "./_constants";
 
 // Util Classes
-export * from "./Observable";
 export * from "./Reactor";
 
 // Basic Classes
 export * from "./Color";
 export * from "./Vector";
 export * from "./Matrix";
-export * from "./Mediator";
 export * from "./Coordinate";
 export * from "./Chunk";
 export * from "./Texture";
