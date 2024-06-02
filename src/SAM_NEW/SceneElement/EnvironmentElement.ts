@@ -82,16 +82,16 @@ export class EnvironmentElement extends SceneElement {
           key: "data",
         },
         {
-          reactor: this,
-          key: "ambientLightsBufferReactor",
+          reactor: this.ambientLightsBufferReactor,
+          key: "buffer",
         },
         {
-          reactor: this,
-          key: "directionalLightsBufferReactor",
+          reactor: this.directionalLightsBufferReactor,
+          key: "buffer",
         },
         {
-          reactor: this,
-          key: "pointLightsBufferReactor",
+          reactor: this.pointLightsBufferReactor,
+          key: "buffer",
         },
       ]
     );
@@ -113,7 +113,7 @@ export class EnvironmentElement extends SceneElement {
     }
 
     if (ambientLightChunks.length > 0) {
-      const ambientLightBufferReactor = new SAM.GPUBufferReactor(
+      this.ambientLightsBufferReactor.resetBuffer(
         this.device,
         () => {
           const newData = new Float32Array(
@@ -134,8 +134,6 @@ export class EnvironmentElement extends SceneElement {
           key: "data",
         }))
       );
-
-      this.ambientLightsBufferReactor = ambientLightBufferReactor;
     }
   }
 

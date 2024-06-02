@@ -23,20 +23,26 @@ export class GPUBufferReactor extends Reactor {
     if (reactorKeySets != null) {
       reactorKeySets.forEach(({ reactor, key }) => {
         this.registerToParentReactor(reactor, key, () => {
-          const newBindData = setter();
+          const newBufferData = setter();
+          this.updateBuffer(device, newBufferData);
+        });
+      });
+    }
+  }
 
-          if (newBindData.type !== this.prevBindDataType) {
-            throw new Error("Unsupported bind data type change");
-          }
+  resetBuffer(
+    device: GPUDevice,
+    setter: () => SAM.BufferData,
+    reactorKeySets?: { reactor: Reactor; key: PropertyKey }[]
+  ): void {
+    this.deregisterParentHandlers();
+    this.updateBuffer(device, setter());
 
-          if (newBindData.value.byteLength !== this.buffer.size) {
-            this.buffer.destroy();
-
-            const newBuffer = this.createBuffer(device, newBindData);
-            this.buffer = newBuffer;
-            return;
-          }
-          device.queue.writeBuffer(this.buffer, 0, newBindData.value);
+    if (reactorKeySets != null) {
+      reactorKeySets.forEach(({ reactor, key }) => {
+        this.registerToParentReactor(reactor, key, () => {
+          const newBufferData = setter();
+          this.updateBuffer(device, newBufferData);
         });
       });
     }
@@ -74,6 +80,21 @@ export class GPUBufferReactor extends Reactor {
     }
 
     throw new Error("Unsupported bind data type");
+  }
+
+  private updateBuffer(device: GPUDevice, bufferData: SAM.BufferData): void {
+    if (bufferData.type !== this.prevBindDataType) {
+      throw new Error("Unsupported bind data type change");
+    }
+
+    if (bufferData.value.byteLength !== this.buffer.size) {
+      this.buffer.destroy();
+
+      const newBuffer = this.createBuffer(device, bufferData);
+      this.buffer = newBuffer;
+      return;
+    }
+    device.queue.writeBuffer(this.buffer, 0, bufferData.value);
   }
 
   static finalizationRegistry = new FinalizationRegistry(
