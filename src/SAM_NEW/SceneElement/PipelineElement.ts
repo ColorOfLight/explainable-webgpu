@@ -3,6 +3,7 @@ import { MeshElement } from "./MeshElement";
 import { GeometryElement } from "./GeometryElement";
 import { MaterialElement } from "./MaterialElement";
 import { CameraElement } from "./CameraElement";
+import { EnvironmentElement } from "./EnvironmentElement";
 
 export class PipelineElement extends SceneElement {
   pipeline: GPURenderPipeline;
@@ -13,7 +14,8 @@ export class PipelineElement extends SceneElement {
     meshElement: MeshElement,
     geometryElement: GeometryElement,
     materialElement: MaterialElement,
-    cameraElement: CameraElement
+    cameraElement: CameraElement,
+    environmentElement: EnvironmentElement
   ) {
     super(device);
 
@@ -22,6 +24,7 @@ export class PipelineElement extends SceneElement {
         meshElement.bindGroupLayoutReactor.data,
         materialElement.bindGroupLayoutReactor.data,
         cameraElement.bindGroupLayoutReactor.data,
+        environmentElement.bindGroupLayoutReactor.data,
       ],
     });
 

@@ -8,12 +8,14 @@ export class SceneManager {
     geometryElements: Map<Symbol, SAM.GeometryElement>;
     materialElements: Map<Symbol, SAM.MaterialElement>;
     cameraElements: Map<Symbol, SAM.CameraElement>;
+    environmentElement: SAM.EnvironmentElement;
   };
   chunks: {
     geometryChunks: Map<Symbol, SAM.GeometryChunk>;
     materialChunks: Map<Symbol, SAM.MaterialChunk>;
     meshChunks: Map<Symbol, SAM.MeshChunk>;
     cameraChunks: Map<Symbol, SAM.CameraChunk>;
+    lightChunks: Map<Symbol, SAM.LightChunk>;
   };
 
   constructor(device: GPUDevice, canvasFormat: GPUTextureFormat) {
@@ -24,12 +26,14 @@ export class SceneManager {
       cameraElements: new Map(),
       geometryElements: new Map(),
       materialElements: new Map(),
+      environmentElement: new SAM.EnvironmentElement(device),
     };
     this.chunks = {
       geometryChunks: new Map(),
       materialChunks: new Map(),
       meshChunks: new Map(),
       cameraChunks: new Map(),
+      lightChunks: new Map(),
     };
   }
 
@@ -117,6 +121,22 @@ export class SceneManager {
       return;
     }
 
+    if (node instanceof SAM.Light) {
+      let lightChunk: SAM.LightChunk;
+      if (!this.chunks.lightChunks.has(node.getId())) {
+        lightChunk = new SAM.LightChunk(node);
+        this.chunks.lightChunks.set(node.getId(), lightChunk);
+      } else {
+        lightChunk = this.chunks.lightChunks.get(node.getId());
+      }
+
+      const lightChunks = Array.from(this.chunks.lightChunks.values());
+      this.sceneElements.environmentElement.update({
+        lightChunks,
+      });
+      return;
+    }
+
     throw new Error("Unsupported node type");
   }
 
@@ -145,13 +165,16 @@ export class SceneManager {
           throw new Error("Material not found in the scene");
         }
 
+        const environmentElement = this.sceneElements.environmentElement;
+
         const pipelineElement = new SAM.PipelineElement(
           this.device,
           this.canvasFormat,
           meshElement,
           geometryElement,
           materialElement,
-          cameraElement
+          cameraElement,
+          environmentElement
         );
 
         return new SAM.RenderSequence(
@@ -159,7 +182,8 @@ export class SceneManager {
           geometryElement,
           materialElement,
           cameraElement,
-          pipelineElement
+          pipelineElement,
+          environmentElement
         );
       }
     );
