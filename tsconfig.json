@@ -3,6 +3,7 @@
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
+    "lib": ["ES2020", "ES2021.WeakRef", "DOM"],
     "types": [
       "@webgpu/types"
     ]
