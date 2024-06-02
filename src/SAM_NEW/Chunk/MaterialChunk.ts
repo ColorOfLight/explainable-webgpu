@@ -49,6 +49,41 @@ export class MaterialChunk extends Chunk {
       return [];
     }
 
+    if (material instanceof SAM.PhongMaterial) {
+      return [
+        new SAM.SingleDataReactor(
+          () => ({
+            type: "uniform-typed-array",
+            value: new Float32Array([
+              ...material.color.toNumberArray(),
+              material.diffuse,
+              material.specular,
+              material.alpha,
+              ...Array(2).fill(0), // padding
+            ]),
+          }),
+          [
+            {
+              reactor: material,
+              key: "color",
+            },
+            {
+              reactor: material,
+              key: "diffuse",
+            },
+            {
+              reactor: material,
+              key: "specular",
+            },
+            {
+              reactor: material,
+              key: "alpha",
+            },
+          ]
+        ),
+      ];
+    }
+
     throw new Error("Unsupported material type");
   }
 
@@ -72,6 +107,18 @@ export class MaterialChunk extends Chunk {
 
     if (material instanceof SAM.NormalMaterial) {
       return [];
+    }
+
+    if (material instanceof SAM.PhongMaterial) {
+      return [
+        new SAM.SingleDataReactor(() => ({
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: {
+            type: "uniform",
+          },
+        })),
+      ];
     }
 
     throw new Error("Unsupported material type");
