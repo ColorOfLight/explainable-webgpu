@@ -1,103 +1,52 @@
 import * as SAM from "@site/src/SAM_NEW";
 
-import { NodeElement } from "./_base";
+import { SceneElement } from "./_base";
+import { createBindGroup, createBindGroupLayout } from "./_utils";
 
-export class CameraElement<
-  C extends SAM.Camera = SAM.Camera,
-> extends NodeElement<C> {
-  observableBuffers: SAM.ObservableGPUBuffer[];
-  observableBindGroup: SAM.ObservableBindGroup;
-  bindGroupLayout: GPUBindGroupLayout;
+export class CameraElement extends SceneElement {
+  bindBufferReactors: SAM.GPUBufferReactor[];
+  bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
+  bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
 
-  constructor(device: GPUDevice, camera: C) {
-    super(device, camera);
+  constructor(device: GPUDevice, cameraChunk: SAM.CameraChunk) {
+    super(device);
 
-    const bindDataList = this.getBindDataList(camera);
+    this.bindBufferReactors = [];
+    cameraChunk.bufferDataReactorList.forEach((bufferDataReactor) => {
+      const bufferReactor = new SAM.GPUBufferReactor(
+        device,
+        () => bufferDataReactor.data,
+        [{ reactor: bufferDataReactor, key: "data" }]
+      );
+      this.bindBufferReactors.push(bufferReactor);
+    });
 
-    this.observableBuffers = bindDataList.map(
-      this.initObservableBuffer.bind(this)
+    this.bindGroupLayoutReactor = new SAM.SingleDataReactor(
+      () =>
+        createBindGroupLayout(device, cameraChunk.layoutEntryDataReactorList),
+      cameraChunk.layoutEntryDataReactorList.map((layoutEntryDataReactor) => ({
+        reactor: layoutEntryDataReactor,
+        key: "data",
+      }))
     );
-    const [bindGroupLayout, observableBindGroup] = this.generateBindGroupSet(
-      bindDataList,
-      this.observableBuffers
+
+    this.bindGroupReactor = new SAM.SingleDataReactor(
+      () =>
+        createBindGroup(
+          device,
+          this.bindBufferReactors,
+          this.bindGroupLayoutReactor
+        ),
+      [
+        ...this.bindBufferReactors.map((bufferReactor) => ({
+          reactor: bufferReactor,
+          key: "buffer",
+        })),
+        {
+          reactor: this.bindGroupLayoutReactor,
+          key: "data",
+        },
+      ]
     );
-
-    this.observableBindGroup = observableBindGroup;
-    this.bindGroupLayout = bindGroupLayout;
-  }
-
-  protected getWatchItems(): SAM.MediatorWatchItem<keyof C>[] {
-    return [];
-  }
-
-  getBindDataList(camera: C): SAM.BindData<C>[] {
-    const viewTransformBindData = {
-      label: "viewTransform",
-      data: {
-        type: "float32Array" as const,
-        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-        getValue: () =>
-          new Float32Array(camera.getViewTransformMatrix().toRenderingData()),
-      },
-      watchKeys: ["eye", "target", "up"] as (keyof C)[],
-    };
-
-    const eyeVectorBindData = {
-      label: "eyeVector",
-
-      data: {
-        type: "float32Array" as const,
-        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-        getValue: () => new Float32Array(camera.getEyeVector().toNumberArray()),
-      },
-      watchKeys: ["eye"] as (keyof C)[],
-    };
-
-    if (camera instanceof SAM.PerspectiveCamera) {
-      const projectionTransformBindData = {
-        label: "projTransform",
-        data: {
-          type: "float32Array" as const,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          getValue: () =>
-            new Float32Array(camera.getProjTransformMatrix().toRenderingData()),
-        },
-        watchKeys: ["fov", "aspect", "near", "far"] as (keyof C)[],
-      };
-
-      return [
-        viewTransformBindData,
-        projectionTransformBindData,
-        eyeVectorBindData,
-      ];
-    }
-
-    if (camera instanceof SAM.OrthographicCamera) {
-      const projectionTransformBindData = {
-        label: "projTransform",
-        data: {
-          type: "float32Array" as const,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          getValue: () =>
-            new Float32Array(camera.getProjTransformMatrix().toRenderingData()),
-        },
-        watchKeys: [
-          "left",
-          "right",
-          "top",
-          "bottom",
-          "near",
-          "far",
-        ] as (keyof C)[],
-      };
-
-      return [
-        viewTransformBindData,
-        projectionTransformBindData,
-        eyeVectorBindData,
-      ];
-    }
-
-    throw new Error("Unsupported camera type");
   }
 }

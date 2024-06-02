@@ -19,20 +19,20 @@ export class PipelineElement extends SceneElement {
 
     const pipelineLayout = device.createPipelineLayout({
       bindGroupLayouts: [
-        meshElement.bindGroupLayout,
-        materialElement.bindGroupLayout,
-        cameraElement.bindGroupLayout,
+        meshElement.bindGroupLayoutReactor.data,
+        materialElement.bindGroupLayoutReactor.data,
+        cameraElement.bindGroupLayoutReactor.data,
       ],
     });
 
     this.pipeline = device.createRenderPipeline({
       layout: pipelineLayout,
       vertex: {
-        module: materialElement.vertexShaderModule,
-        buffers: [geometryElement.vertexBufferLayout],
+        module: materialElement.vertexShaderModuleReactor.data,
+        buffers: [geometryElement.pipelineDataReactor.data.vertexBufferLayout],
       },
       fragment: {
-        module: materialElement.fragmentShaderModule,
+        module: materialElement.fragmentShaderModuleReactor.data,
         targets: [
           {
             format: canvasFormat,
@@ -40,8 +40,7 @@ export class PipelineElement extends SceneElement {
         ],
       },
       primitive: {
-        topology: geometryElement.topology,
-        cullMode: materialElement.cullMode,
+        topology: geometryElement.pipelineDataReactor.data.topology,
       },
       depthStencil: {
         depthWriteEnabled: true,

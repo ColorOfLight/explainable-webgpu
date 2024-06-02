@@ -10,12 +10,12 @@ export class RenderSequence {
     cameraElement: SAM.CameraElement,
     pipelineElement: SAM.PipelineElement
   ) {
-    const vertexBuffer = geometryElement.observableVertexBuffer.buffer;
-    const indexBuffer = geometryElement.observableIndexBuffer.buffer;
-    const indexCount = geometryElement.indexCount;
-    const meshBindGroup = meshElement.observableBindGroup.bindGroup;
-    const materialBindGroup = materialElement.observableBindGroup.bindGroup;
-    const cameraBindGroup = cameraElement.observableBindGroup.bindGroup;
+    const vertexBuffer = geometryElement.vertexBufferReactor.buffer;
+    const indexBuffer = geometryElement.indexBufferReactor.buffer;
+    const indexCount = geometryElement.indexCountReactor.data;
+    const meshBindGroup = meshElement.bindGroupReactor.data;
+    const materialBindGroup = materialElement.bindGroupReactor.data;
+    const cameraBindGroup = cameraElement.bindGroupReactor.data;
     const pipeline = pipelineElement.pipeline;
 
     this.runSequence = (passEncoder: GPURenderPassEncoder) => {

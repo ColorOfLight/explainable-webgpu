@@ -1,50 +1,56 @@
 import * as SAM from "@site/src/SAM_NEW";
 
-import { NodeElement } from "./_base";
+import { SceneElement } from "./_base";
+import { createBindGroup, createBindGroupLayout } from "./_utils";
 
-export class MeshElement extends NodeElement<SAM.Mesh> {
-  geometryNodeId: Symbol;
-  materialNodeId: Symbol;
-  observableBuffers: SAM.ObservableGPUBuffer[];
-  observableBindGroup: SAM.ObservableBindGroup;
-  bindGroupLayout: GPUBindGroupLayout;
+export class MeshElement extends SceneElement {
+  bindBufferReactors: SAM.GPUBufferReactor[];
+  bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
+  bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
+  geometryNodeIdReactor: SAM.SingleDataReactor<Symbol>;
+  materialNodeIdReactor: SAM.SingleDataReactor<Symbol>;
 
-  constructor(device: GPUDevice, mesh: SAM.Mesh) {
-    super(device, mesh);
+  constructor(device: GPUDevice, meshChunk: SAM.MeshChunk) {
+    super(device);
 
-    const bindDataList = this.getBindDataList(mesh);
+    this.bindBufferReactors = [];
+    meshChunk.bufferDataReactorList.forEach((bufferDataReactor) => {
+      const bufferReactor = new SAM.GPUBufferReactor(
+        device,
+        () => bufferDataReactor.data,
+        [{ reactor: bufferDataReactor, key: "data" }]
+      );
+      this.bindBufferReactors.push(bufferReactor);
+    });
 
-    this.geometryNodeId = mesh.geometry.getId();
-    this.materialNodeId = mesh.material.getId();
-
-    this.observableBuffers = bindDataList.map(
-      this.initObservableBuffer.bind(this)
+    this.bindGroupLayoutReactor = new SAM.SingleDataReactor(
+      () => createBindGroupLayout(device, meshChunk.layoutEntryDataReactorList),
+      meshChunk.layoutEntryDataReactorList.map((layoutEntryDataReactor) => ({
+        reactor: layoutEntryDataReactor,
+        key: "data",
+      }))
     );
-    const [bindGroupLayout, observableBindGroup] = this.generateBindGroupSet(
-      bindDataList,
-      this.observableBuffers
-    );
 
-    this.observableBindGroup = observableBindGroup;
-    this.bindGroupLayout = bindGroupLayout;
-  }
-
-  protected getWatchItems() {
-    return [];
-  }
-
-  getBindDataList(mesh: SAM.Mesh): SAM.BindData<SAM.Mesh>[] {
-    return [
-      {
-        label: "transformMatrix",
-        data: {
-          type: "float32Array",
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          getValue: () =>
-            new Float32Array(mesh.transformMatrix.toRenderingData()),
+    this.bindGroupReactor = new SAM.SingleDataReactor(
+      () =>
+        createBindGroup(
+          device,
+          this.bindBufferReactors,
+          this.bindGroupLayoutReactor
+        ),
+      [
+        ...this.bindBufferReactors.map((bufferReactor) => ({
+          reactor: bufferReactor,
+          key: "buffer",
+        })),
+        {
+          reactor: this.bindGroupLayoutReactor,
+          key: "data",
         },
-        watchKeys: ["transformMatrix"],
-      },
-    ];
+      ]
+    );
+
+    this.geometryNodeIdReactor = meshChunk.geometryNodeIdReactor;
+    this.materialNodeIdReactor = meshChunk.materialNodeIdReactor;
   }
 }

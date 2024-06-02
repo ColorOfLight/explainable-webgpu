@@ -1,64 +1,72 @@
 import * as SAM from "@site/src/SAM_NEW";
 
-import { NodeElement } from "./_base";
+import { SceneElement } from "./_base";
+import { createBindGroup, createBindGroupLayout } from "./_utils";
 
-export class MaterialElement extends NodeElement<SAM.Material> {
-  observableBuffers: SAM.ObservableGPUBuffer[];
-  observableBindGroup: SAM.ObservableBindGroup;
-  bindGroupLayout: GPUBindGroupLayout;
-  vertexShaderModule: GPUShaderModule;
-  fragmentShaderModule: GPUShaderModule;
-  cullMode: GPUCullMode;
+export class MaterialElement extends SceneElement {
+  bindBufferReactors: SAM.GPUBufferReactor[];
+  bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
+  bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
+  vertexShaderModuleReactor: SAM.SingleDataReactor<GPUShaderModule>;
+  fragmentShaderModuleReactor: SAM.SingleDataReactor<GPUShaderModule>;
 
-  constructor(device: GPUDevice, material: SAM.Material) {
-    super(device, material);
+  constructor(device: GPUDevice, materialChunk: SAM.MaterialChunk) {
+    super(device);
 
-    const bindDataList = this.getBindDataList(material);
-
-    this.observableBuffers = bindDataList.map(
-      this.initObservableBuffer.bind(this)
-    );
-    const [bindGroupLayout, observableBindGroup] = this.generateBindGroupSet(
-      bindDataList,
-      this.observableBuffers
-    );
-
-    this.observableBindGroup = observableBindGroup;
-    this.bindGroupLayout = bindGroupLayout;
-
-    this.vertexShaderModule = device.createShaderModule({
-      code: material.vertexDescriptor.code,
+    this.bindBufferReactors = [];
+    materialChunk.bufferDataReactorList.forEach((bufferDataReactor) => {
+      const bufferReactor = new SAM.GPUBufferReactor(
+        device,
+        () => bufferDataReactor.data,
+        [{ reactor: bufferDataReactor, key: "data" }]
+      );
+      this.bindBufferReactors.push(bufferReactor);
     });
 
-    this.fragmentShaderModule = device.createShaderModule({
-      code: material.fragmentDescriptor.code,
-    });
+    this.bindGroupLayoutReactor = new SAM.SingleDataReactor(
+      () =>
+        createBindGroupLayout(device, materialChunk.layoutEntryDataReactorList),
+      materialChunk.layoutEntryDataReactorList.map(
+        (layoutEntryDataReactor) => ({
+          reactor: layoutEntryDataReactor,
+          key: "data",
+        })
+      )
+    );
 
-    this.cullMode = "none";
-  }
-
-  protected getWatchItems() {
-    return [];
-  }
-
-  getBindDataList(material: SAM.Material): SAM.BindData<SAM.Material>[] {
-    if (material instanceof SAM.BasicMaterial) {
-      return [
+    this.bindGroupReactor = new SAM.SingleDataReactor(
+      () =>
+        createBindGroup(
+          device,
+          this.bindBufferReactors,
+          this.bindGroupLayoutReactor
+        ),
+      [
+        ...this.bindBufferReactors.map((bufferReactor) => ({
+          reactor: bufferReactor,
+          key: "buffer",
+        })),
         {
-          label: "color",
-          data: {
-            type: "float32Array",
-            visibility: GPUShaderStage.FRAGMENT,
-            getValue: () => material.color.toTypedArray(),
-          },
+          reactor: this.bindGroupLayoutReactor,
+          key: "data",
         },
-      ];
-    }
+      ]
+    );
 
-    if (material instanceof SAM.NormalMaterial) {
-      return [];
-    }
+    this.vertexShaderModuleReactor = new SAM.SingleDataReactor(
+      () =>
+        this.device.createShaderModule(
+          materialChunk.vertexDescriptorReactor.data
+        ),
+      [{ reactor: materialChunk.vertexDescriptorReactor, key: "data" }]
+    );
 
-    throw new Error("Unsupported material type");
+    this.fragmentShaderModuleReactor = new SAM.SingleDataReactor(
+      () =>
+        this.device.createShaderModule(
+          materialChunk.fragmentDescriptorReactor.data
+        ),
+      [{ reactor: materialChunk.fragmentDescriptorReactor, key: "data" }]
+    );
   }
 }
