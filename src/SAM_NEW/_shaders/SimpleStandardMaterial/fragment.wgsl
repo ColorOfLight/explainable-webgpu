@@ -10,7 +10,7 @@ struct AmbientLights {
 }
 
 struct FragmentInput {
-  @location(2) color: vec3f,
+  @location(3) color: vec3f,
 }
 
 @group(1) @binding(0) var<uniform> materialColor: vec3f;
