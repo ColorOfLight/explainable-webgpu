@@ -20,7 +20,6 @@ sidebar_label: Roadmap
 - Env Mapping
   - [x] Cube mapping
     - [ ] Cube mapping test (xyz direction, flip-Y image, and z-index value)
-  - [ ] Spherical mapping
   - [ ] Env map light
 - Shadow
   - [ ] Shadow mapping
@@ -33,13 +32,14 @@ sidebar_label: Roadmap
 - Ray tracing
   - [ ] WIP
 - Misc
-  - [ ] Buffer Manager (via state manager)
+  - [x] Buffer Manager (via state manager)
   - [ ] Anti-aliasing
   - [ ] Options for Depth buffer
   - [ ] Encapsulate classes for interactive property changes
   - [ ] JS Doc for Classes
   - [ ] Improve Contents
-  - [ ] Make class and type names more consistent and semantic
+  - [x] Make class and type names more consistent and semantic
+  - [ ] Destory All GPUBuffer when SceneManager is destoryed
 
 ## NICE TO HAVE
 
@@ -48,9 +48,11 @@ sidebar_label: Roadmap
 - Non-photorealistic rendering
   - [ ] Toon shading
 - Texture
+  - [ ] Prevent multiple instances from same Texture
   - [ ] Mipmapping (using Compute Shader)
   - [ ] anisotropic filtering
 - Env Mapping
+  - [ ] Spherical mapping
   - [ ] Reflection
   - [ ] Refraction
 - Shadow
@@ -62,3 +64,8 @@ sidebar_label: Roadmap
   - [ ] Multipass for lights
   - [ ] Transparency
   - [ ] Post-processing
+  - [ ] Pipeline & RenderSequence Optimization
+  - [ ] Lazy loading on Chunks
+  - [ ] Reactive update EnvElement with SceneElements
+  - [ ] Make symbol names more consistent and semantic
+  - [ ] Label for GPUObjects
