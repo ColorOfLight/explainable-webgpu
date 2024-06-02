@@ -106,6 +106,48 @@ export class MaterialChunk extends Chunk {
       ];
     }
 
+    if (material instanceof SAM.ImageTextureMaterial) {
+      return [
+        new SAM.SingleDataReactor(
+          () => ({
+            type: "sampler",
+            value: material.samplerDescriptor,
+          }),
+          [
+            {
+              reactor: material,
+              key: "samplerDescriptor",
+            },
+          ]
+        ),
+        new SAM.SingleDataReactor(
+          () => ({
+            type: "image",
+            value: {
+              type: "image",
+              image: material.imageTexture.data,
+              width: material.imageTexture.width,
+              height: material.imageTexture.height,
+            },
+          }),
+          [
+            {
+              reactor: material.imageTexture,
+              key: "data",
+            },
+            {
+              reactor: material.imageTexture,
+              key: "width",
+            },
+            {
+              reactor: material.imageTexture,
+              key: "height",
+            },
+          ]
+        ),
+      ];
+    }
+
     throw new Error("Unsupported material type");
   }
 
@@ -131,6 +173,21 @@ export class MaterialChunk extends Chunk {
 
     if (material instanceof SAM.NormalMaterial) {
       return [];
+    }
+
+    if (material instanceof SAM.ImageTextureMaterial) {
+      return [
+        new SAM.SingleDataReactor(() => ({
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: {},
+        })),
+        new SAM.SingleDataReactor(() => ({
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {},
+        })),
+      ];
     }
 
     throw new Error("Unsupported material type");
