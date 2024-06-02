@@ -9,41 +9,7 @@ export interface Vertex {
   color?: SAM.Color;
 }
 
-type BindDataList = [
-  {
-    type: "float32Array";
-    getValue: () => Float32Array;
-    visibility: GPUShaderStageFlags;
-  },
-  {
-    type: "vertex";
-    getValue: () => Float32Array;
-  },
-  {
-    type: "index";
-    getValue: () => Uint16Array;
-  },
-
-  // TODO: Implement these types
-  // {
-  //   type: "sampler";
-  //   descriptor: GPUSamplerDescriptor;
-  // },
-  // {
-  //   type: "image";
-  //   value: ImageBitmap;
-  //   width: number;
-  //   height: number;
-  // },
-];
-
-// export interface BindData<N extends SAM.Node> {
-//   label: string;
-//   data: BindDataList[number];
-//   watchKeys?: (keyof N)[];
-// }
-
-export type BufferData =
+export type NumbersResourcePrecursor =
   | {
       type: "uniform-typed-array";
       value: Float32Array | Uint32Array | Int32Array;
@@ -56,5 +22,27 @@ export type BufferData =
       type: "index";
       value: Uint16Array;
     };
+
+export type ImageResourcePrecursor = {
+  type: "image";
+  value: {
+    image: ImageBitmap;
+    width: number;
+    height: number;
+  };
+};
+
+export type SamplerResourcePrecursor = {
+  type: "sampler";
+  value: GPUSamplerDescriptor;
+};
+
+export type BindingResourcePrecursor =
+  | NumbersResourcePrecursor
+  | ImageResourcePrecursor
+  | SamplerResourcePrecursor;
+
+// TODO: remove
+export type BufferData = BindingResourcePrecursor;
 
 export type LightType = "ambient" | "directional" | "point";
