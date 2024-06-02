@@ -18,6 +18,8 @@ export class GPUBufferReactor extends Reactor {
     this.buffer = buffer;
     this.prevBindDataType = bufferData.type;
 
+    GPUBufferReactor.finalizationRegistry.register(this, buffer, this);
+
     if (reactorKeySets != null) {
       reactorKeySets.forEach(({ reactor, key }) => {
         this.registerToParentReactor(reactor, key, () => {
@@ -28,6 +30,8 @@ export class GPUBufferReactor extends Reactor {
           }
 
           if (newBindData.value.byteLength !== this.buffer.size) {
+            this.buffer.destroy();
+
             const newBuffer = this.createBuffer(device, newBindData);
             this.buffer = newBuffer;
             return;
@@ -38,7 +42,10 @@ export class GPUBufferReactor extends Reactor {
     }
   }
 
-  createBuffer(device: GPUDevice, bufferData: SAM.BufferData): GPUBuffer {
+  private createBuffer(
+    device: GPUDevice,
+    bufferData: SAM.BufferData
+  ): GPUBuffer {
     if (bufferData.type === "uniform-typed-array") {
       const buffer = device.createBuffer({
         size: bufferData.value.byteLength,
@@ -68,4 +75,10 @@ export class GPUBufferReactor extends Reactor {
 
     throw new Error("Unsupported bind data type");
   }
+
+  static finalizationRegistry = new FinalizationRegistry(
+    (buffer: GPUBuffer) => {
+      buffer.destroy();
+    }
+  );
 }
