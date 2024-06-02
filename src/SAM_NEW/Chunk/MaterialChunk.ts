@@ -25,7 +25,10 @@ export class MaterialChunk extends Chunk {
   getBufferDataList(
     material: SAM.Material
   ): SAM.SingleDataReactor<SAM.BufferData>[] {
-    if (material instanceof SAM.BasicMaterial) {
+    if (
+      material instanceof SAM.BasicMaterial ||
+      material instanceof SAM.SimpleStandardMaterial
+    ) {
       return [
         new SAM.SingleDataReactor(
           () => ({
@@ -52,7 +55,10 @@ export class MaterialChunk extends Chunk {
   getLayoutEntryDataList(
     material: SAM.Material
   ): SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[] {
-    if (material instanceof SAM.BasicMaterial) {
+    if (
+      material instanceof SAM.BasicMaterial ||
+      material instanceof SAM.SimpleStandardMaterial
+    ) {
       return [
         new SAM.SingleDataReactor(() => ({
           binding: 0,
