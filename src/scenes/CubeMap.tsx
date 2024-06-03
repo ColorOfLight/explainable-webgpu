@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import * as SAM from "@site/src/SAM";
+import * as SAM from "@site/src/SAM_NEW";
 
 import Yokohama3PxJpg from "/textures/cube-map/Yokohama3/px.jpg";
 import Yokohama3NxJpg from "/textures/cube-map/Yokohama3/nx.jpg";
@@ -22,8 +22,8 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   });
   await cubeMapTexture.load();
 
-  const scene = new SAM.Scene();
-  scene.setEnvironment(cubeMapTexture);
+  const sceneManager = renderer.createSceneManager();
+  sceneManager.setBackground(cubeMapTexture);
 
   const camera = new SAM.PerspectiveCamera(
     Math.PI / 2,
@@ -32,7 +32,9 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
     100
   );
 
-  camera.eye = new SAM.Vector3([0, 0, 1.5]);
+  camera.eye = new SAM.Vector3(0, 0, 1.5);
+
+  sceneManager.add(camera);
 
   const orbitalControl = new SAM.OrbitalControl(canvas);
   orbitalControl.attachTo(camera);
@@ -40,10 +42,8 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const resizeObserver = renderer.generateResizeObserver();
   resizeObserver.observe(canvas);
 
-  renderer.render(scene, camera);
-
   SAM.runTick(() => {
-    renderer.render(scene, camera);
+    renderer.render(sceneManager, camera);
   });
 };
 
