@@ -21,18 +21,4 @@ export class Geometry extends SAM.Node {
     this.vertexBufferLayout = BASE_VERTEX_BUFFER_LAYOUT;
     this.isWireframe = options?.isWireframe ?? false;
   }
-
-  // TODO: remove below functions
-
-  getVertexes(): SAM.Vertex[] {
-    return this.vertexes;
-  }
-
-  getVertexBufferLayout(): GPUVertexBufferLayout {
-    return this.vertexBufferLayout;
-  }
-
-  getIndexes(): number[] {
-    return this.indexes;
-  }
 }
