@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import * as SAM from "@site/src/SAM_NEW";
+import * as SAM from "@site/src/SAM";
 
 const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const renderer = new SAM.WebGPURenderer(canvas);

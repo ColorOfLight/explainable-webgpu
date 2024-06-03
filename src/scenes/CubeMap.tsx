@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import * as SAM from "@site/src/SAM_NEW";
+import * as SAM from "@site/src/SAM";
 
 import Yokohama3PxJpg from "/textures/cube-map/Yokohama3/px.jpg";
 import Yokohama3NxJpg from "/textures/cube-map/Yokohama3/nx.jpg";

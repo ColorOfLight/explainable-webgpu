@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import * as SAM from "@site/src/SAM_NEW";
+import * as SAM from "@site/src/SAM";
 
 import Brick12Png from "/textures/brick_12/brick_12-128x128.png";
 
