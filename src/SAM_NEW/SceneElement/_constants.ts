@@ -8,5 +8,6 @@ export const RESOURCE_CLASS_MAP: Record<
   vertex: SAM.NumbersResourceReactor,
   index: SAM.NumbersResourceReactor,
   image: SAM.ImageResourceReactor,
+  "cube-image": SAM.CubeImageResourceReactor,
   sampler: SAM.SamplerResourceReactor,
 };

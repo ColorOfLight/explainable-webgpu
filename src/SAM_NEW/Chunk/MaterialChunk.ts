@@ -148,6 +148,48 @@ export class MaterialChunk extends Chunk {
       ];
     }
 
+    if (material instanceof SAM.EnvironmentCubeMaterial) {
+      return [
+        new SAM.SingleDataReactor(
+          () => ({
+            type: "sampler",
+            value: material.samplerDescriptor,
+          }),
+          [
+            {
+              reactor: material,
+              key: "samplerDescriptor",
+            },
+          ]
+        ),
+        new SAM.SingleDataReactor(
+          () => ({
+            type: "cube-image",
+            value: {
+              type: "cube",
+              images: material.cubeMapTexture.data,
+              width: material.cubeMapTexture.width,
+              height: material.cubeMapTexture.height,
+            },
+          }),
+          [
+            {
+              reactor: material.cubeMapTexture,
+              key: "data",
+            },
+            {
+              reactor: material.cubeMapTexture,
+              key: "width",
+            },
+            {
+              reactor: material.cubeMapTexture,
+              key: "height",
+            },
+          ]
+        ),
+      ];
+    }
+
     throw new Error("Unsupported material type");
   }
 
@@ -186,6 +228,24 @@ export class MaterialChunk extends Chunk {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {},
+        })),
+      ];
+    }
+
+    if (material instanceof SAM.EnvironmentCubeMaterial) {
+      return [
+        new SAM.SingleDataReactor(() => ({
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: {},
+        })),
+        new SAM.SingleDataReactor(() => ({
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: "float",
+            viewDimension: "cube",
+          },
         })),
       ];
     }

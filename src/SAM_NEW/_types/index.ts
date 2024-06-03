@@ -30,6 +30,15 @@ export type ImageResourcePrecursor = {
   };
 };
 
+export type CubeImageResourcePrecursor = {
+  type: "cube-image";
+  value: {
+    images: ImageBitmap[];
+    width: number;
+    height: number;
+  };
+};
+
 export type SamplerResourcePrecursor = {
   type: "sampler";
   value: GPUSamplerDescriptor;
@@ -38,6 +47,7 @@ export type SamplerResourcePrecursor = {
 export type BindingResourcePrecursor =
   | NumbersResourcePrecursor
   | ImageResourcePrecursor
+  | CubeImageResourcePrecursor
   | SamplerResourcePrecursor;
 
 export type LightType = "ambient" | "directional" | "point";
