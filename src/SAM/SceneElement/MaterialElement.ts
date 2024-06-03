@@ -10,6 +10,7 @@ export class MaterialElement extends SceneElement {
   bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
   vertexShaderModuleReactor: SAM.SingleDataReactor<GPUShaderModule>;
   fragmentShaderModuleReactor: SAM.SingleDataReactor<GPUShaderModule>;
+  pipelineDataReactor: SAM.MaterialChunk["pipelineDataReactor"];
 
   constructor(device: GPUDevice, materialChunk: SAM.MaterialChunk) {
     super(device);
@@ -69,5 +70,7 @@ export class MaterialElement extends SceneElement {
         ),
       [{ reactor: materialChunk.fragmentDescriptorReactor, key: "data" }]
     );
+
+    this.pipelineDataReactor = materialChunk.pipelineDataReactor;
   }
 }

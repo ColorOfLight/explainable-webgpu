@@ -1,11 +1,16 @@
 import * as SAM from "@site/src/SAM";
 import { Chunk } from "./_base";
 
+interface PipelineData {
+  depthWriteEnabled: boolean;
+}
+
 export class MaterialChunk extends Chunk {
   precursorReactorList: SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[];
   layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
   vertexDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
   fragmentDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
+  pipelineDataReactor: SAM.SingleDataReactor<PipelineData>;
 
   constructor(material: SAM.Material) {
     super();
@@ -20,9 +25,10 @@ export class MaterialChunk extends Chunk {
       () => material.fragmentDescriptor,
       [{ reactor: material, key: "fragmentDescriptor" }]
     );
+    this.pipelineDataReactor = this.getPipelineDataReactor(material);
   }
 
-  getPrecursorList(
+  private getPrecursorList(
     material: SAM.Material
   ): SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[] {
     if (
@@ -193,7 +199,7 @@ export class MaterialChunk extends Chunk {
     throw new Error("Unsupported material type");
   }
 
-  getLayoutEntryDataList(
+  private getLayoutEntryDataList(
     material: SAM.Material
   ): SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[] {
     if (
@@ -251,5 +257,23 @@ export class MaterialChunk extends Chunk {
     }
 
     throw new Error("Unsupported material type");
+  }
+
+  private getPipelineDataReactor(material: SAM.Material) {
+    if (material instanceof SAM.EnvironmentCubeMaterial) {
+      return new SAM.SingleDataReactor(
+        () => ({
+          depthWriteEnabled: false,
+        }),
+        []
+      );
+    }
+
+    return new SAM.SingleDataReactor(
+      () => ({
+        depthWriteEnabled: true,
+      }),
+      []
+    );
   }
 }

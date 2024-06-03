@@ -46,7 +46,8 @@ export class PipelineElement extends SceneElement {
         topology: geometryElement.pipelineDataReactor.data.topology,
       },
       depthStencil: {
-        depthWriteEnabled: true,
+        depthWriteEnabled:
+          materialElement.pipelineDataReactor.data.depthWriteEnabled,
         depthCompare: "less",
         format: "depth24plus",
       },
