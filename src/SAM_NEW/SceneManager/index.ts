@@ -10,6 +10,7 @@ export class SceneManager {
     cameraElements: Map<Symbol, SAM.CameraElement>;
     environmentElement: SAM.EnvironmentElement;
   };
+  backgroundElement: SAM.MeshElement | undefined;
   chunks: {
     geometryChunks: Map<Symbol, SAM.GeometryChunk>;
     materialChunks: Map<Symbol, SAM.MaterialChunk>;
@@ -138,6 +139,34 @@ export class SceneManager {
     throw new Error("Unsupported node type");
   }
 
+  setBackground(cubeMapTexture: SAM.CubeMapTexture) {
+    if (this.backgroundElement !== undefined) {
+      throw new Error("Background already set");
+    }
+
+    const geometry = new SAM.CubeGeometry(1, 1, 1);
+    const material = new SAM.EnvironmentCubeMaterial(cubeMapTexture);
+    const mesh = new SAM.Mesh(geometry, material);
+
+    const geometryChunk = new SAM.GeometryChunk(geometry);
+    this.chunks.geometryChunks.set(geometry.getId(), geometryChunk);
+
+    const geometryElement = new SAM.GeometryElement(this.device, geometryChunk);
+    this.sceneElements.geometryElements.set(geometry.getId(), geometryElement);
+
+    const materialChunk = new SAM.MaterialChunk(material);
+    this.chunks.materialChunks.set(material.getId(), materialChunk);
+
+    const materialElement = new SAM.MaterialElement(this.device, materialChunk);
+    this.sceneElements.materialElements.set(material.getId(), materialElement);
+
+    const meshChunk = new SAM.MeshChunk(mesh);
+    this.chunks.meshChunks.set(mesh.getId(), meshChunk);
+
+    const meshElement = new SAM.MeshElement(this.device, meshChunk);
+    this.backgroundElement = meshElement;
+  }
+
   generateRenderSequences(camera: SAM.Camera): SAM.RenderSequence[] {
     const cameraElement = this.sceneElements.cameraElements.get(camera.getId());
 
@@ -145,7 +174,15 @@ export class SceneManager {
       throw new Error("Camera not found in the scene");
     }
 
-    const meshElements = Array.from(this.sceneElements.meshElements.values());
+    const backgroundMeshElement = this.backgroundElement;
+    const sceneMeshElements = Array.from(
+      this.sceneElements.meshElements.values()
+    );
+
+    const meshElements = [
+      ...(backgroundMeshElement !== undefined ? [backgroundMeshElement] : []),
+      ...sceneMeshElements,
+    ];
 
     const renderSequences: SAM.RenderSequence[] = meshElements.map(
       (meshElement) => {
