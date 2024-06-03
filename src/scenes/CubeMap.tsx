@@ -25,6 +25,12 @@ const drawCanvas = async (canvas: HTMLCanvasElement) => {
   const sceneManager = renderer.createSceneManager();
   sceneManager.setBackground(cubeMapTexture);
 
+  const geometry = new SAM.CubeGeometry(1, 1, 1);
+  const material = new SAM.BasicMaterial({ color: new SAM.Color(1, 0, 0) });
+  const mesh = new SAM.Mesh(geometry, material);
+
+  sceneManager.add(mesh);
+
   const camera = new SAM.PerspectiveCamera(
     Math.PI / 2,
     canvas.clientWidth / canvas.clientHeight,
