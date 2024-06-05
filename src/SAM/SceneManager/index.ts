@@ -3,38 +3,42 @@ import * as SAM from "@site/src/SAM";
 export class SceneManager {
   device: GPUDevice;
   canvasFormat: GPUTextureFormat;
-  sceneElements: {
-    meshElements: Map<Symbol, SAM.MeshElement>;
-    geometryElements: Map<Symbol, SAM.GeometryElement>;
-    materialElements: Map<Symbol, SAM.MaterialElement>;
-    cameraElements: Map<Symbol, SAM.CameraElement>;
-    environmentElement: SAM.EnvironmentElement;
-  };
-  backgroundElement: SAM.MeshElement | undefined;
   chunks: {
     geometryChunks: Map<Symbol, SAM.GeometryChunk>;
     materialChunks: Map<Symbol, SAM.MaterialChunk>;
     meshChunks: Map<Symbol, SAM.MeshChunk>;
     cameraChunks: Map<Symbol, SAM.CameraChunk>;
+    shadowCameraChunks: Map<Symbol, SAM.CameraChunk>;
     lightChunks: Map<Symbol, SAM.LightChunk>;
   };
+  sceneElements: {
+    meshElements: Map<Symbol, SAM.MeshElement>;
+    geometryElements: Map<Symbol, SAM.GeometryElement>;
+    materialElements: Map<Symbol, SAM.MaterialElement>;
+    cameraElements: Map<Symbol, SAM.CameraElement>;
+    shadowCameraElements: Map<Symbol, SAM.CameraElement>;
+    environmentElement: SAM.EnvironmentElement;
+  };
+  backgroundElement: SAM.MeshElement | undefined;
 
   constructor(device: GPUDevice, canvasFormat: GPUTextureFormat) {
     this.device = device;
     this.canvasFormat = canvasFormat;
-    this.sceneElements = {
-      meshElements: new Map(),
-      cameraElements: new Map(),
-      geometryElements: new Map(),
-      materialElements: new Map(),
-      environmentElement: new SAM.EnvironmentElement(device),
-    };
     this.chunks = {
       geometryChunks: new Map(),
       materialChunks: new Map(),
       meshChunks: new Map(),
       cameraChunks: new Map(),
+      shadowCameraChunks: new Map(),
       lightChunks: new Map(),
+    };
+    this.sceneElements = {
+      meshElements: new Map(),
+      cameraElements: new Map(),
+      shadowCameraElements: new Map(),
+      geometryElements: new Map(),
+      materialElements: new Map(),
+      environmentElement: new SAM.EnvironmentElement(device),
     };
   }
 
@@ -131,8 +135,38 @@ export class SceneManager {
         lightChunk = this.chunks.lightChunks.get(node.getId());
       }
 
+      if (node instanceof SAM.LightWithShadow) {
+        let shadowCameraChunk: SAM.CameraChunk;
+        if (!this.chunks.shadowCameraChunks.has(node.shadow.camera.getId())) {
+          shadowCameraChunk = new SAM.CameraChunk(node.shadow.camera);
+          this.chunks.shadowCameraChunks.set(
+            node.shadow.camera.getId(),
+            shadowCameraChunk
+          );
+        } else {
+          shadowCameraChunk = this.chunks.shadowCameraChunks.get(
+            node.shadow.camera.getId()
+          );
+        }
+
+        if (!this.sceneElements.shadowCameraElements.has(node.getId())) {
+          const shadowCameraElement = new SAM.CameraElement(
+            this.device,
+            shadowCameraChunk
+          );
+          this.sceneElements.shadowCameraElements.set(
+            node.shadow.camera.getId(),
+            shadowCameraElement
+          );
+        }
+      }
+
       const lightChunks = Array.from(this.chunks.lightChunks.values());
-      this.sceneElements.environmentElement.updateLights(lightChunks);
+      this.sceneElements.environmentElement.updateLights(
+        lightChunks,
+        this.chunks.shadowCameraChunks
+      );
+
       return;
     }
 

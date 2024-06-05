@@ -1,17 +1,28 @@
 import * as SAM from "@site/src/SAM";
 import { SceneElement } from "./_base";
 import { createBindGroup } from "./_utils";
+import { CameraElement } from "./CameraElement";
 
 const AMBIENT_LIGHT_SIZE = 3 + 1; /* color(3) + intensity(1) */
 const DIRECTIONAL_LIGHT_SIZE =
-  3 + 1 + 3 + 1; /* color(3) + intensity(1) + direction(3) + pad(1) */
+  3 +
+  1 +
+  3 +
+  4 +
+  1; /* color(3) + intensity(1) + direction(3) + shadowOptions(4) + pad(1) */
 const POINT_LIGHT_SIZE =
   3 + 1 + 3 + 1; /* color(3) + intensity(1) + position(3) + decay(1) */
+const DIRECTIONAL_SHADOW_CAMERA_SIZE =
+  4 * 4 +
+  4 * 4 +
+  3 +
+  1; /* viewMatrix(16) + projectionMatrix(16) + eye(3) + pad(1) */
 
 export class EnvironmentElement extends SceneElement {
   ambientLightsResourceReactor: SAM.NumbersResourceReactor;
   directionalLightsResourceReactor: SAM.NumbersResourceReactor;
   pointLightsResourceReactor: SAM.NumbersResourceReactor;
+  directionalShadowCamerasResourceReactor: SAM.NumbersResourceReactor;
   bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
   bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
 
@@ -31,6 +42,13 @@ export class EnvironmentElement extends SceneElement {
     this.pointLightsResourceReactor = this.generateResourceReactor(
       device,
       Array(POINT_LIGHT_SIZE * SAM.MAX_POINT_LIGHTS_DEFAULT).fill(0)
+    );
+
+    this.directionalShadowCamerasResourceReactor = this.generateResourceReactor(
+      device,
+      Array(
+        DIRECTIONAL_SHADOW_CAMERA_SIZE * SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT
+      ).fill(0)
     );
 
     this.bindGroupLayoutReactor = new SAM.SingleDataReactor(() => {
@@ -60,6 +78,14 @@ export class EnvironmentElement extends SceneElement {
               type: "uniform" as const,
             },
           },
+          {
+            // Directional light shadow cameras
+            binding: 3,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {
+              type: "uniform" as const,
+            },
+          },
         ],
       });
     });
@@ -72,6 +98,7 @@ export class EnvironmentElement extends SceneElement {
             this.ambientLightsResourceReactor,
             this.directionalLightsResourceReactor,
             this.pointLightsResourceReactor,
+            this.directionalShadowCamerasResourceReactor,
           ],
           this.bindGroupLayoutReactor
         ),
@@ -92,11 +119,18 @@ export class EnvironmentElement extends SceneElement {
           reactor: this.pointLightsResourceReactor,
           key: "resource",
         },
+        {
+          reactor: this.directionalShadowCamerasResourceReactor,
+          key: "resource",
+        },
       ]
     );
   }
 
-  updateLights(lightChunks: SAM.LightChunk[]) {
+  updateLights(
+    lightChunks: SAM.LightChunk[],
+    shadowCameraChunkMap: Map<Symbol, SAM.CameraChunk>
+  ) {
     const ambientLightChunks = lightChunks.filter(
       (chunk) => chunk.lightType === "ambient"
     );
@@ -148,6 +182,19 @@ export class EnvironmentElement extends SceneElement {
         SAM.MAX_POINT_LIGHTS_DEFAULT
       );
     }
+
+    // Shadow Cameras
+
+    const shadowCameraChunks = Array.from(shadowCameraChunkMap.values());
+    if (shadowCameraChunks.length > 0) {
+      this.updateEachShadowCameraChunks(
+        this.device,
+        shadowCameraChunks,
+        this.directionalShadowCamerasResourceReactor,
+        DIRECTIONAL_SHADOW_CAMERA_SIZE,
+        SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT
+      );
+    }
   }
 
   private updateEachLightChunks(
@@ -179,6 +226,50 @@ export class EnvironmentElement extends SceneElement {
         reactor: chunk.precursorReactor,
         key: "data",
       }))
+    );
+  }
+
+  private updateEachShadowCameraChunks(
+    device: GPUDevice,
+    shadowCameraChunks: SAM.CameraChunk[],
+    resourceReactor: SAM.NumbersResourceReactor,
+    bufferSize: number,
+    maxLightCount: number
+  ) {
+    resourceReactor.resetResource(
+      device,
+      () => {
+        const newData = new Float32Array(maxLightCount * bufferSize);
+        shadowCameraChunks.forEach((chunk, chunkIndex) => {
+          const chunkOffset = chunkIndex * bufferSize;
+          let innerOffset = 0;
+
+          chunk.precursorReactorList.forEach((precursorReactor) => {
+            if (precursorReactor.data.type !== "uniform-typed-array") {
+              throw new Error("Invalid shadow camera precursor data type");
+            }
+
+            const offset = chunkOffset + innerOffset;
+            newData.set(precursorReactor.data.value, offset);
+            innerOffset += precursorReactor.data.value.length;
+          });
+        });
+
+        return {
+          type: "uniform-typed-array",
+          value: newData,
+        };
+      },
+      shadowCameraChunks.reduce((prevKeySets, chunk) => {
+        const reactorKeySets = chunk.precursorReactorList.map(
+          (precursorReactor) => ({
+            reactor: precursorReactor,
+            key: "data",
+          })
+        );
+
+        return [...prevKeySets, ...reactorKeySets];
+      }, [])
     );
   }
 

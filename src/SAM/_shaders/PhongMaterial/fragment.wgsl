@@ -11,6 +11,10 @@ struct DirectionalLight {
   color: vec3f,
   intensity: f32,
   direction: vec3f,
+  shadowIntensity: f32,
+  shadowBias: f32,
+  shadowNormalBias: f32,
+  shadowRadius: f32,
 };
 
 struct PointLight {
@@ -18,6 +22,12 @@ struct PointLight {
   intensity: f32,
   position: vec3f,
   decay: f32,
+};
+
+struct DirectionalShadowCamera {
+  view: mat4x4f,
+  projection: mat4x4f,
+  eye: vec3f,
 };
 
 struct AmbientLights {
@@ -30,6 +40,10 @@ struct DirectionalLights {
 
 struct PointLights {
   light: array<PointLight, POINT_LIGHTS_COUNT>,
+}
+
+struct DirectionalShadowCameras {
+  camera: array<DirectionalShadowCamera, DIRECTIONAL_LIGHTS_COUNT>,
 }
 
 struct PhongMaterial {
@@ -69,6 +83,7 @@ fn getColorFromLight(
 @group(3) @binding(0) var<uniform> ambientLights: AmbientLights;
 @group(3) @binding(1) var<uniform> directionalLights: DirectionalLights;
 @group(3) @binding(2) var<uniform> pointLights: PointLights;
+@group(3) @binding(3) var<uniform> directionalShadowCameras: DirectionalShadowCameras;
 
 @fragment
 fn fragmentMain(input: FragmentInput) -> @location(0) vec4f {
