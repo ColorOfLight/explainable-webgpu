@@ -1,9 +1,9 @@
 import * as SAM from "@site/src/SAM";
-import { Light, LightOptions } from "./_base";
+import { LightWithShadow, LightWithShadowOptions } from "./_base";
 
-export interface DirectionalLightOptions extends LightOptions {}
+export interface DirectionalLightOptions extends LightWithShadowOptions {}
 
-export class DirectionalLight extends Light {
+export class DirectionalLight extends LightWithShadow {
   direction: SAM.Vector3;
 
   constructor(
@@ -12,7 +12,9 @@ export class DirectionalLight extends Light {
     direction: SAM.Vector3,
     options?: DirectionalLightOptions
   ) {
-    super(color, intensity, options);
+    const shadowCamera = new SAM.OrthographicCamera(-5, 5, 5, -5, 0.5, 500);
+
+    super(shadowCamera, color, intensity, options);
 
     this.direction = direction;
   }

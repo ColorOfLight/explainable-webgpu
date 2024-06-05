@@ -13,6 +13,7 @@ export * from "./Matrix";
 export * from "./Coordinate";
 export * from "./Chunk";
 export * from "./Texture";
+export * from "./LightShadow";
 
 // Controls
 export * from "./Control";

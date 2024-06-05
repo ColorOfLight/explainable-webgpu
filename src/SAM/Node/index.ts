@@ -1,7 +1,7 @@
 import * as SAM from "@site/src/SAM";
 
 export class Node extends SAM.Reactor {
-  private id: Symbol;
+  private id: symbol;
   isDestroyed: boolean;
 
   constructor(label: string) {
@@ -15,11 +15,7 @@ export class Node extends SAM.Reactor {
     this.id = Symbol(label);
   }
 
-  getId(): Symbol {
+  getId(): symbol {
     return this.id;
-  }
-
-  getObservableRecord(): Record<string, SAM.Observable> {
-    throw new Error("Method not implemented.");
   }
 }
