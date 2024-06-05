@@ -45,6 +45,12 @@ export class LightChunk extends Chunk {
             ...light.color.toNumberArray(),
             light.intensity,
             ...light.direction.toNumberArray(),
+            // Shadow
+            light.shadow.intensity,
+            light.shadow.bias,
+            light.shadow.normalBias,
+            light.shadow.radius,
+            0, // padding
           ]),
         }),
         [
@@ -59,6 +65,26 @@ export class LightChunk extends Chunk {
           {
             reactor: light,
             key: "direction",
+          },
+          {
+            reactor: light.shadow,
+            key: "mapSize",
+          },
+          {
+            reactor: light.shadow,
+            key: "intensity",
+          },
+          {
+            reactor: light.shadow,
+            key: "bias",
+          },
+          {
+            reactor: light.shadow,
+            key: "normalBias",
+          },
+          {
+            reactor: light.shadow,
+            key: "radius",
           },
         ]
       );
