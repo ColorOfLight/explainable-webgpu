@@ -218,7 +218,7 @@ export class SceneManager {
       ...sceneMeshElements,
     ];
 
-    const renderSequences: SAM.RenderSequence[] = meshElements.map(
+    const newRenderSequences: SAM.RenderSequence[] = meshElements.map(
       (meshElement) => {
         const geometryElement = this.sceneElements.geometryElements.get(
           meshElement.geometryNodeIdReactor.data
@@ -234,29 +234,18 @@ export class SceneManager {
           throw new Error("Material not found in the scene");
         }
 
-        const environmentElement = this.sceneElements.environmentElement;
-
-        const pipelineElement = new SAM.PipelineElement(
+        return new SAM.RenderSequence(
           this.device,
           this.canvasFormat,
-          meshElement,
           geometryElement,
           materialElement,
-          cameraElement,
-          environmentElement
-        );
-
-        return new SAM.RenderSequence(
           meshElement,
-          geometryElement,
-          materialElement,
           cameraElement,
-          pipelineElement,
-          environmentElement
+          this.sceneElements.environmentElement
         );
       }
     );
 
-    return renderSequences;
+    return newRenderSequences;
   }
 }

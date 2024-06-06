@@ -1,16 +1,12 @@
 import * as SAM from "@site/src/SAM";
 import { Chunk } from "./_base";
 
-interface PipelineData {
-  depthWriteEnabled: boolean;
-}
-
 export class MaterialChunk extends Chunk {
   precursorReactorList: SAM.SingleDataReactor<SAM.BindingResourcePrecursor>[];
   layoutEntryDataReactorList: SAM.SingleDataReactor<GPUBindGroupLayoutEntry>[];
   vertexDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
   fragmentDescriptorReactor: SAM.SingleDataReactor<GPUShaderModuleDescriptor>;
-  pipelineDataReactor: SAM.SingleDataReactor<PipelineData>;
+  pipelineDataReactor: SAM.SingleDataReactor<SAM.MaterialPipelineData>;
 
   constructor(material: SAM.Material) {
     super();

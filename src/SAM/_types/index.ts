@@ -39,6 +39,14 @@ export type CubeImageResourcePrecursor = {
   };
 };
 
+export type DepthTextureResourcePrecursor = {
+  type: "depth-texture";
+  value: {
+    width: number;
+    height: number;
+  };
+};
+
 export type SamplerResourcePrecursor = {
   type: "sampler";
   value: GPUSamplerDescriptor;
@@ -48,6 +56,20 @@ export type BindingResourcePrecursor =
   | NumbersResourcePrecursor
   | ImageResourcePrecursor
   | CubeImageResourcePrecursor
-  | SamplerResourcePrecursor;
+  | SamplerResourcePrecursor
+  | DepthTextureResourcePrecursor;
 
 export type LightType = "ambient" | "directional" | "point";
+
+export interface GeometryPipelineData {
+  topology: GPUPrimitiveTopology;
+  vertexBufferLayout: GPUVertexBufferLayout;
+}
+
+export interface MaterialPipelineData {
+  depthWriteEnabled: boolean;
+}
+
+export interface PipelineData
+  extends GeometryPipelineData,
+    MaterialPipelineData {}

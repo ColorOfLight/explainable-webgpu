@@ -1,34 +1,110 @@
 import * as SAM from "@site/src/SAM";
 
-export class RenderSequence {
-  runSequence: (passEncoder: GPURenderPassEncoder) => void;
+export class RenderSequence extends SAM.Reactor {
+  pipelineReactor: SAM.SingleDataReactor<GPURenderPipeline>;
+  pipelineLayoutReactor: SAM.SingleDataReactor<GPUPipelineLayout>;
+
+  vertexResourceReactor: SAM.NumbersResourceReactor;
+  indexResourceReactor: SAM.NumbersResourceReactor;
+  indexCountReactor: SAM.SingleDataReactor<number>;
+  bindGroupReactors: SAM.SingleDataReactor<GPUBindGroup>[];
 
   constructor(
-    meshElement: SAM.MeshElement,
+    device: GPUDevice,
+    canvasFormat: GPUTextureFormat,
     geometryElement: SAM.GeometryElement,
     materialElement: SAM.MaterialElement,
+    meshElement: SAM.MeshElement,
     cameraElement: SAM.CameraElement,
-    pipelineElement: SAM.PipelineElement,
     environmentElement: SAM.EnvironmentElement
   ) {
-    const vertexBuffer = geometryElement.vertexResourceReactor.resource.buffer;
-    const indexBuffer = geometryElement.indexResourceReactor.resource.buffer;
-    const indexCount = geometryElement.indexCountReactor.data;
-    const meshBindGroup = meshElement.bindGroupReactor.data;
-    const materialBindGroup = materialElement.bindGroupReactor.data;
-    const cameraBindGroup = cameraElement.bindGroupReactor.data;
-    const envBindGroup = environmentElement.bindGroupReactor.data;
-    const pipeline = pipelineElement.pipeline;
+    super();
 
-    this.runSequence = (passEncoder: GPURenderPassEncoder) => {
-      passEncoder.setPipeline(pipeline);
-      passEncoder.setVertexBuffer(0, vertexBuffer);
-      passEncoder.setIndexBuffer(indexBuffer, "uint16");
-      passEncoder.setBindGroup(0, meshBindGroup);
-      passEncoder.setBindGroup(1, materialBindGroup);
-      passEncoder.setBindGroup(2, cameraBindGroup);
-      passEncoder.setBindGroup(3, envBindGroup);
-      passEncoder.drawIndexed(indexCount, 1, 0, 0, 0);
-    };
+    this.vertexResourceReactor = geometryElement.vertexResourceReactor;
+    this.indexResourceReactor = geometryElement.indexResourceReactor;
+    this.indexCountReactor = geometryElement.indexCountReactor;
+    this.bindGroupReactors = [
+      meshElement.bindGroupReactor,
+      materialElement.bindGroupReactor,
+      cameraElement.bindGroupReactor,
+      environmentElement.bindGroupReactor,
+    ];
+
+    const bindGroupLayoutReactors = [
+      meshElement.bindGroupLayoutReactor,
+      materialElement.bindGroupLayoutReactor,
+      cameraElement.bindGroupLayoutReactor,
+      environmentElement.bindGroupLayoutReactor,
+    ];
+    this.pipelineLayoutReactor = new SAM.SingleDataReactor(
+      () => {
+        return device.createPipelineLayout({
+          bindGroupLayouts: bindGroupLayoutReactors.map(
+            (reactor) => reactor.data
+          ),
+        });
+      },
+      bindGroupLayoutReactors.map((reactor) => ({ reactor, key: "data" }))
+    );
+
+    const pipelineDataReactors = [
+      geometryElement.pipelineDataReactor,
+      materialElement.pipelineDataReactor,
+    ];
+    this.pipelineReactor = new SAM.SingleDataReactor(() => {
+      const pipelineData = pipelineDataReactors.reduce((prevObj, reactor) => {
+        return { ...prevObj, ...reactor.data };
+      }, {}) as SAM.PipelineData;
+
+      return device.createRenderPipeline({
+        layout: this.pipelineLayoutReactor.data,
+        vertex: {
+          module: materialElement.vertexShaderModuleReactor.data,
+          buffers: [pipelineData.vertexBufferLayout],
+        },
+        fragment: {
+          module: materialElement.fragmentShaderModuleReactor.data,
+          targets: [
+            {
+              format: canvasFormat,
+            },
+          ],
+        },
+        primitive: {
+          topology: pipelineData.topology,
+        },
+        depthStencil: {
+          depthWriteEnabled: pipelineData.depthWriteEnabled,
+          depthCompare: "less",
+          format: "depth24plus",
+        },
+      });
+    }, [
+      ...pipelineDataReactors.map((reactor) => ({ reactor, key: "data" })),
+      { reactor: this.pipelineLayoutReactor, key: "data" },
+      { reactor: materialElement.vertexShaderModuleReactor, key: "data" },
+      { reactor: materialElement.fragmentShaderModuleReactor, key: "data" },
+    ]);
+  }
+
+  runSequence(passEncoder: GPURenderPassEncoder) {
+    passEncoder.setPipeline(this.pipelineReactor.data);
+    passEncoder.setVertexBuffer(0, this.vertexResourceReactor.resource.buffer);
+    passEncoder.setIndexBuffer(
+      this.indexResourceReactor.resource.buffer,
+      "uint16"
+    );
+    this.bindGroupReactors.forEach((reactor, index) => {
+      passEncoder.setBindGroup(index, reactor.data);
+    });
+    passEncoder.drawIndexed(this.indexCountReactor.data, 1, 0, 0, 0);
+
+    // TODO: Remove this after handling initialization optimization
+    this.destroy();
+  }
+
+  destroy() {
+    this.pipelineReactor.deregisterParentHandlers();
+    this.pipelineLayoutReactor.deregisterParentHandlers();
   }
 }

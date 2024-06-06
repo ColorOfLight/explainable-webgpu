@@ -1,15 +1,10 @@
 import * as SAM from "@site/src/SAM";
 import { Chunk } from "./_base";
 
-interface PipelineData {
-  topology: GPUPrimitiveTopology;
-  vertexBufferLayout: GPUVertexBufferLayout;
-}
-
 export class GeometryChunk extends Chunk {
   vertexDataReactor: SAM.SingleDataReactor<SAM.NumbersResourcePrecursor>;
   indexDataReactor: SAM.SingleDataReactor<SAM.NumbersResourcePrecursor>;
-  pipelineDataReactor: SAM.SingleDataReactor<PipelineData>;
+  pipelineDataReactor: SAM.SingleDataReactor<SAM.GeometryPipelineData>;
   indexCountDataReactor: SAM.SingleDataReactor<number>;
 
   constructor(geometry: SAM.Geometry) {
