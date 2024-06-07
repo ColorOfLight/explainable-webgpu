@@ -201,7 +201,11 @@ export class SceneManager {
     this.backgroundElement = meshElement;
   }
 
-  generateRenderSequences(camera: SAM.Camera): SAM.RenderSequence[] {
+  render(
+    camera: SAM.Camera,
+    encoder: GPUCommandEncoder,
+    drawingRenderDescriptor: GPURenderPassDescriptor
+  ) {
     const cameraElement = this.sceneElements.cameraElements.get(camera.getId());
 
     if (cameraElement === undefined) {
@@ -218,7 +222,51 @@ export class SceneManager {
       ...sceneMeshElements,
     ];
 
-    const newRenderSequences: SAM.RenderSequence[] = meshElements.map(
+    if (this.sceneElements.shadowCameraElements.size > 0) {
+      const shadowCameraElement = Array.from(
+        this.sceneElements.shadowCameraElements.values()
+      )[0];
+
+      const shadowRenderDescriptor: GPURenderPassDescriptor = {
+        label: "Shadow Render Pass",
+        colorAttachments: [],
+        depthStencilAttachment: {
+          view: this.sceneElements.environmentElement
+            .directionalShadowDepthReactor.resource,
+          depthClearValue: 1.0,
+          depthLoadOp: "clear",
+          depthStoreOp: "store",
+        },
+      };
+
+      const shadowSequences: SAM.ShadowSequence[] = meshElements.map(
+        (meshElement) => {
+          const geometryElement = this.sceneElements.geometryElements.get(
+            meshElement.geometryNodeIdReactor.data
+          );
+          if (geometryElement === undefined) {
+            throw new Error("Geometry not found in the scene");
+          }
+
+          return new SAM.ShadowSequence(
+            this.device,
+            geometryElement,
+            meshElement,
+            shadowCameraElement
+          );
+        }
+      );
+
+      const shadowEncoder = encoder.beginRenderPass(shadowRenderDescriptor);
+
+      shadowSequences.forEach((sequence) => {
+        sequence.runSequence(shadowEncoder);
+      });
+
+      shadowEncoder.end();
+    }
+
+    const drawingSequences: SAM.DrawingSequence[] = meshElements.map(
       (meshElement) => {
         const geometryElement = this.sceneElements.geometryElements.get(
           meshElement.geometryNodeIdReactor.data
@@ -234,7 +282,7 @@ export class SceneManager {
           throw new Error("Material not found in the scene");
         }
 
-        return new SAM.RenderSequence(
+        return new SAM.DrawingSequence(
           this.device,
           this.canvasFormat,
           geometryElement,
@@ -246,6 +294,12 @@ export class SceneManager {
       }
     );
 
-    return newRenderSequences;
+    const passEncoder = encoder.beginRenderPass(drawingRenderDescriptor);
+
+    drawingSequences.forEach((sequence) => {
+      sequence.runSequence(passEncoder);
+    });
+
+    passEncoder.end();
   }
 }

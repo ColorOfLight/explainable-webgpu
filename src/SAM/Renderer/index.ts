@@ -101,15 +101,8 @@ export class WebGPURenderer {
     const encoderDraw = this.device.createCommandEncoder({
       label: "draw-encoder",
     });
-    const pass = encoderDraw.beginRenderPass(this.renderPassDescriptor);
 
-    const renderSequences = sceneManager.generateRenderSequences(camera);
-
-    renderSequences.forEach((renderSequence) => {
-      renderSequence.runSequence(pass);
-    });
-
-    pass.end();
+    sceneManager.render(camera, encoderDraw, this.renderPassDescriptor);
 
     const commandBuffer = encoderDraw.finish();
     this.device.queue.submit([commandBuffer]);

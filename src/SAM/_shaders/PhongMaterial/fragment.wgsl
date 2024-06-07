@@ -78,12 +78,38 @@ fn getColorFromLight(
     return diffuseColor + specularColor;
 }
 
+fn getShadowFactor(
+  camera: DirectionalShadowCamera,
+  light: DirectionalLight,
+  position: vec3f,
+  normal: vec3f
+) -> f32 {
+  let shadowCoord = camera.projection * camera.view * vec4f(position, 1.0);
+  let shadowCoordNormalized = (shadowCoord.xyz / shadowCoord.w) * vec3f(0.5, -0.5, 1.0) + vec3f(0.5, 0.5, 0);
+
+  let bias = light.shadowBias + max(0, dot(normal, light.direction)) * light.shadowNormalBias;
+
+  var shadow = 0.0;
+  let sampleCount = 4.0;
+
+  for (var x = -1.0; x <= 1.0; x = x + 2.0) {
+    for (var y = -1.0; y <= 1.0; y = y + 2.0) {
+      let offset = vec2(x, y) * light.shadowRadius;
+      shadow = shadow + textureSampleCompare(shadowMap, shadowSampler, shadowCoordNormalized.xy + offset, shadowCoordNormalized.z - bias);
+    }
+  }
+
+  return shadow / sampleCount;
+}
+
 @group(1) @binding(0) var<uniform> phong: PhongMaterial;
 @group(2) @binding(2) var<uniform> eyePosition: vec3f;
 @group(3) @binding(0) var<uniform> ambientLights: AmbientLights;
 @group(3) @binding(1) var<uniform> directionalLights: DirectionalLights;
 @group(3) @binding(2) var<uniform> pointLights: PointLights;
 @group(3) @binding(3) var<uniform> directionalShadowCameras: DirectionalShadowCameras;
+@group(3) @binding(4) var shadowMap: texture_depth_2d;
+@group(3) @binding(5) var shadowSampler: sampler_comparison;
 
 @fragment
 fn fragmentMain(input: FragmentInput) -> @location(0) vec4f {
@@ -108,9 +134,11 @@ fn fragmentMain(input: FragmentInput) -> @location(0) vec4f {
 
   for (var i = 0; i < DIRECTIONAL_LIGHTS_COUNT; i = i + 1) {
     let light = directionalLights.light[i];
+    let camera = directionalShadowCameras.camera[i];
     let colorFromLight = getColorFromLight(light.color, light.direction, baseColor, viewVector, normal, diffuse, specular, alpha);
+    let shadow = getShadowFactor(camera, light, position, normal);
 
-    outputColor = outputColor + light.intensity * colorFromLight;
+    outputColor = outputColor + light.intensity * colorFromLight * shadow;
   }
 
   for (var i = 0; i < POINT_LIGHTS_COUNT; i = i + 1) {

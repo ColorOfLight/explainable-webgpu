@@ -1,7 +1,6 @@
 import * as SAM from "@site/src/SAM";
 import { SceneElement } from "./_base";
 import { createBindGroup } from "./_utils";
-import { CameraElement } from "./CameraElement";
 
 const AMBIENT_LIGHT_SIZE = 3 + 1; /* color(3) + intensity(1) */
 const DIRECTIONAL_LIGHT_SIZE =
@@ -26,6 +25,10 @@ export class EnvironmentElement extends SceneElement {
   bindGroupLayoutReactor: SAM.SingleDataReactor<GPUBindGroupLayout>;
   bindGroupReactor: SAM.SingleDataReactor<GPUBindGroup>;
 
+  // TODO: Need to be more general
+  directionalShadowDepthReactor: SAM.DepthTextureResourceReactor;
+  directionalSamplerReactor: SAM.SamplerResourceReactor;
+
   constructor(device: GPUDevice) {
     super(device);
 
@@ -49,6 +52,27 @@ export class EnvironmentElement extends SceneElement {
       Array(
         DIRECTIONAL_SHADOW_CAMERA_SIZE * SAM.MAX_DIRECTIONAL_LIGHTS_DEFAULT
       ).fill(0)
+    );
+
+    this.directionalShadowDepthReactor = new SAM.DepthTextureResourceReactor(
+      device,
+      () => ({
+        type: "depth-texture",
+        value: {
+          width: 1024,
+          height: 1024,
+        },
+      })
+    );
+
+    this.directionalSamplerReactor = new SAM.SamplerResourceReactor(
+      device,
+      () => ({
+        type: "sampler",
+        value: {
+          compare: "less",
+        },
+      })
     );
 
     this.bindGroupLayoutReactor = new SAM.SingleDataReactor(() => {
@@ -86,6 +110,22 @@ export class EnvironmentElement extends SceneElement {
               type: "uniform" as const,
             },
           },
+          {
+            // Directional shadow depth texture
+            binding: 4,
+            visibility: GPUShaderStage.FRAGMENT,
+            texture: {
+              sampleType: "depth" as const,
+            },
+          },
+          {
+            // Directional shadow sampler
+            binding: 5,
+            visibility: GPUShaderStage.FRAGMENT,
+            sampler: {
+              type: "comparison" as const,
+            },
+          },
         ],
       });
     });
@@ -99,6 +139,8 @@ export class EnvironmentElement extends SceneElement {
             this.directionalLightsResourceReactor,
             this.pointLightsResourceReactor,
             this.directionalShadowCamerasResourceReactor,
+            this.directionalShadowDepthReactor,
+            this.directionalSamplerReactor,
           ],
           this.bindGroupLayoutReactor
         ),
