@@ -37,9 +37,9 @@ export class LightWithShadow extends Light {
       camera,
       shadowOptions.mapSize ?? [1024, 1024],
       shadowOptions.intensity ?? 0.5,
-      shadowOptions.bias ?? 0.0001,
-      shadowOptions.bias ?? 0.0001,
-      shadowOptions.radius ?? 0.5
+      shadowOptions.bias ?? 0.01,
+      shadowOptions.normalBias ?? 0.001,
+      shadowOptions.radius ?? 0.001
     );
   }
 }
