@@ -16,7 +16,24 @@ export class Camera extends SAM.Node {
 
     this.target = options?.target ?? new SAM.Vector3(0, 0, 0);
     this.eye = options?.eye ?? new SAM.Vector3(0, 0, 1);
-    this.up = new SAM.Vector3(0, 1, 0);
+
+    const eyeFromTarget = this.eye.sub(this.target);
+
+    if (eyeFromTarget.getLength() < 1e-6) {
+      throw new Error("Invalid camera position");
+    }
+
+    if (eyeFromTarget.cross(new SAM.Vector3(0, 1, 0)).getLength() < 1e-6) {
+      this.up =
+        eyeFromTarget.y > 0
+          ? new SAM.Vector3(0, 0, 1)
+          : new SAM.Vector3(0, 0, -1);
+
+      return;
+    }
+
+    const newRight = eyeFromTarget.cross(new SAM.Vector3(0, 1, 0));
+    this.up = newRight.cross(eyeFromTarget).normalize();
   }
 
   getViewTransformMatrix(): SAM.Matrix4 {
