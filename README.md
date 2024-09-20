@@ -1,6 +1,6 @@
 # Explainable WebGPU
 
-> This project is archived due to a lack of solid design.
+> **Notice**: This project is archived due to a lack of solid project design. 📦
 
 ![Example Animated Screenshot](/images/example.gif)
 
