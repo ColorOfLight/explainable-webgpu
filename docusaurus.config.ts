@@ -68,13 +68,6 @@ const config: Config = {
           position: "left",
           label: "Content",
         },
-        {
-          type: "docSidebar",
-          sidebarId: "useful-links",
-          position: "left",
-          label: "Useful Links",
-          docsPluginId: "useful-links",
-        },
       ],
     },
     prism: {
@@ -92,15 +85,6 @@ const config: Config = {
         path: "docs-list/introduction",
         routeBasePath: "introduction",
         sidebarPath: "sidebars/introduction.ts",
-      },
-    ],
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "useful-links",
-        path: "docs-list/useful-links",
-        routeBasePath: "useful-links",
-        sidebarPath: "sidebars/usefulLinks.ts",
       },
     ],
   ],
