@@ -8,11 +8,9 @@ function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <header>
-      <div className="container">
-        <Heading as="h1" className="hero__title underline">
-          {siteConfig.title}
-        </Heading>
-      </div>
+      <Heading as="h1" className="hero__title text-4xl">
+        {siteConfig.title}
+      </Heading>
     </header>
   );
 }
@@ -20,7 +18,19 @@ function HomepageHeader() {
 export default function Home(): JSX.Element {
   return (
     <Layout>
-      <HomepageHeader />
+      <div className="container p-8">
+        <HomepageHeader />
+        <ul>
+          <li>
+            <a href="/introduction/introduction">Introduction</a>, a brief
+            explanation of the project.
+          </li>
+          <li>
+            <a href="/content/first-scene">Content</a>, a detailed exploration
+            of the project.
+          </li>
+        </ul>
+      </div>
     </Layout>
   );
 }
